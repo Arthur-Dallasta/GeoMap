@@ -71,16 +71,33 @@
 
 ## Traceability
 
-*(Preenchido durante criação do roadmap)*
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01–05 | Phase 1 | Pending |
-| PROP-01–07 | Phase 1 | Pending |
-| AREA-01–04 | Phase 2 | Pending |
-| CAT-01–04  | Phase 3 | Pending |
-| MAP-01–03  | Phase 3 | Pending |
-| MAP-04–05  | Phase 4 | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| AUTH-05 | Phase 1 | Pending |
+| PROP-01 | Phase 1 | Pending |
+| PROP-02 | Phase 1 | Pending |
+| PROP-03 | Phase 1 | Pending |
+| PROP-04 | Phase 1 | Pending |
+| PROP-05 | Phase 1 | Pending |
+| PROP-06 | Phase 1 | Pending |
+| PROP-07 | Phase 1 | Pending |
+| AREA-01 | Phase 2 | Pending |
+| AREA-02 | Phase 2 | Pending |
+| AREA-03 | Phase 2 | Pending |
+| AREA-04 | Phase 2 | Pending |
+| CAT-01 | Phase 3 | Pending |
+| CAT-02 | Phase 3 | Pending |
+| CAT-03 | Phase 3 | Pending |
+| CAT-04 | Phase 3 | Pending |
+| MAP-01 | Phase 3 | Pending |
+| MAP-02 | Phase 3 | Pending |
+| MAP-03 | Phase 3 | Pending |
+| MAP-04 | Phase 4 | Pending |
+| MAP-05 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 21 total
@@ -89,4 +106,4 @@
 
 ---
 *Requirements defined: 2026-04-07*
-*Last updated: 2026-04-07 after initialization*
+*Last updated: 2026-04-07 — roadmap created, traceability finalized*
