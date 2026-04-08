@@ -45,11 +45,18 @@ O produtor consegue visualizar um mapa personalizado de sua propriedade — com 
 
 - **Formato de importação**: GeoJSON — formato padrão definido pelo app externo de coleta
 - **Hierarquia**: Dois níveis (Propriedade → Áreas) — estrutura suficiente para o caso de uso atual
+- **Arquitetura**: Frontend React (SPA) + Backend FastAPI (Python) — dois serviços independentes
+- **Comunicação**: REST API com CORS entre frontend e backend
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
+| React SPA + FastAPI (Python) | Python tem ecossistema geoespacial nativo (GDAL, Shapely); FastAPI oferece tipagem forte e docs automáticas; separação permite deploy independente | — Pending |
+| JWT para autenticação | Stateless, compatível com SPA + API separada; padrão FastAPI com OAuth2PasswordBearer | — Pending |
+| SQLAlchemy + GeoAlchemy2 | Tipagem nativa para PostGIS (geometry type); Prisma suporta PostGIS apenas via raw SQL/Unsupported | — Pending |
+| FastAPI UploadFile para GeoJSON | Nativo do FastAPI com streaming e validação; Multer é incompatível com Python | — Pending |
+| PostGIS ativo desde v1 | GeoAlchemy2 + GDAL permitem validar e processar geometrias server-side; armazenamento como `geometry` é future-proof | — Pending |
 | GeoJSON como formato de importação | Formato padrão web para geodados, produzido pelo app externo | — Pending |
 | Categorias livres (nome + cor) | Produtores usam para culturas, tipos de uso ou qualquer classificação — flexibilidade é o valor | — Pending |
 | Mapa interativo + exportação | Interativo para navegação no sistema; exportação para relatórios/impressão | — Pending |
@@ -73,4 +80,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after initialization*
+*Last updated: 2026-04-07 — Stack migrado para React + FastAPI (Python) + SQLAlchemy + PostGIS*

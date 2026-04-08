@@ -16,80 +16,103 @@ Sistema web para cadastro e gestão de propriedades rurais. Produtores rurais re
 <!-- GSD:stack-start source:research/STACK.md -->
 ## Technology Stack
 
-## Recommended Stack
-### Core Framework
+## Architecture: Frontend + Backend Separados
+
+Frontend React (SPA) e backend FastAPI (Python) como serviços independentes, comunicando via REST API.
+
+### Frontend
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| Next.js | 15.x | Full-stack framework (frontend + API routes) | App Router provides server components, API routes eliminate a separate backend, and Next.js middleware handles multi-tenant data isolation at the request layer. Official docs explicitly cover multi-tenant architecture. |
-| TypeScript | 5.x | Language | Type safety across Prisma models, API responses, and GeoJSON feature types — reduces runtime errors on geometry data. |
-| React | 19.x | UI layer | Bundled with Next.js 15; hooks work naturally with map state (selected polygon, category assignment). |
+| React.js | 19.x | UI framework | SPA com hooks para gerenciamento de estado do mapa (polígono selecionado, categoria atribuída) |
+| Vite | 6.x | Build tool | HMR rápido, configuração simples, amplamente adotado com React |
+| React Router | v7 | Client-side routing | Roteamento SPA — suficiente para app autenticada sem necessidade de SSR/SEO |
+| TypeScript | 5.x | Language | Tipagem nos componentes React, chamadas API, e tipos GeoJSON |
+### Backend
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| Python | 3.12+ | Backend language | Ecossistema maduro para geoespacial (GDAL, Shapely, GeoPandas) |
+| FastAPI | 0.115+ | API framework | Tipagem forte, docs OpenAPI automáticas, performance assíncrona, suporte nativo a upload de arquivos |
+| SQLAlchemy | 2.0 | ORM | Type-safe queries, suporte a PostGIS via GeoAlchemy2, migrations via Alembic |
+| Alembic | 1.x | Database migrations | Evolução controlada do schema — padrão do ecossistema SQLAlchemy |
+| GeoAlchemy2 | 0.15+ | PostGIS integration | Tipos `Geometry` nativos no SQLAlchemy, queries espaciais tipadas |
 ### Authentication
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| Better Auth | latest (1.x) | Auth + session management | Self-hosted (no per-user pricing), TypeScript-first, has a Prisma adapter, supports email/password out of the box. Auth.js (NextAuth v5) is the alternative but has more complex multi-tenant session handling. Better Auth is the 2025 community preference for greenfield apps. |
+| JWT (python-jose) | — | Token-based auth | Stateless, compatível com SPA + API separada |
+| passlib + bcrypt | — | Password hashing | Hash seguro com salt automático — padrão Python |
+| OAuth2PasswordBearer | — | FastAPI auth flow | Flow padrão do FastAPI com suporte a Bearer token |
 ### Database
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| PostgreSQL | 16.x | Primary database | Mature, reliable, and supports the PostGIS extension if spatial queries are ever needed. |
-| PostGIS | 3.x | Spatial extension | Store polygon geometries as native `geometry` type rather than raw JSON blobs. Enables bounding-box queries (find all areas within a region) and `ST_AsGeoJSON()` for direct GeoJSON export. For v1, even if spatial queries are not used, storing geometries in PostGIS is future-proof and costs nothing extra. |
-| Prisma | 5.x | ORM | First-class Next.js integration, type-safe queries generated from schema, Prisma Migrate handles schema evolution. Works natively with PostgreSQL/PostGIS via `Unsupported("geometry")` type for PostGIS columns when raw SQL is needed. |
+| PostgreSQL | 16.x | Primary database | Maduro, confiável, suporte nativo ao PostGIS |
+| PostGIS | 3.x | Spatial extension | `geometry` type nativo, `ST_AsGeoJSON()` para export, queries espaciais (bounding box, interseção) |
 ### Map Library
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| Leaflet | 1.9.x | Core map engine | No API key required (unlike Mapbox GL JS), MIT licensed, ~40 KB, handles GeoJSON polygons natively via `L.geoJSON()` with per-feature style functions. Sufficient for this use case: static polygon display, no 3D, no vector tiles. |
-| React Leaflet | 4.x | React wrapper for Leaflet | Exposes Leaflet primitives as React components. `<GeoJSON>` component accepts a `style` callback — trivially maps a category's hex color to `fillColor`. |
-| react-leaflet-cluster | 2.x | (optional) | Not needed for polygons but available if point markers are added later. |
-### Tile Provider
+| Leaflet | 1.9.x | Core map engine | Sem API key, MIT, leve (~40KB), `L.geoJSON()` nativo com per-feature style |
+| React Leaflet | 4.x | React wrapper | Componentes React para primitivas Leaflet. `<GeoJSON>` aceita `style` callback para cores por categoria |
+### Geospatial Processing
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| Turf.js | 7.x | Client-side geo computations | Cálculos leves no browser (área, centroide, bounding box) |
+| GDAL/OGR (Python) | 3.x | Server-side geo processing | Validação e transformação de GeoJSON, reprojeção de CRS, parsing robusto de arquivos geoespaciais |
+| Shapely | 2.x | Server-side geometry ops | Manipulação de geometrias no Python — validação, simplificação, cálculo de área |
+### File Upload
 | Technology | Purpose | Why |
 |------------|---------|-----|
-| OpenStreetMap (via Leaflet default TileLayer) | Base map tiles | Free, no API key, global coverage including rural Brazil. Esri World Imagery is a free alternative for satellite view — useful for rural property context. |
+| FastAPI UploadFile | Upload de GeoJSON | Nativo do FastAPI com suporte a streaming, validação de tipo e tamanho — substitui Multer |
+| python-multipart | Parser multipart | Dependência do FastAPI para upload de arquivos |
 ### Map Export (Image / PDF)
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| leaflet-image | 0.4.x | Capture Leaflet map canvas to PNG | Purpose-built for Leaflet tile+vector export. Handles tile cross-origin issues that break html2canvas. |
-| jsPDF | 2.x | Wrap PNG into PDF | Lightweight, browser-side PDF generation. Combine with leaflet-image: capture → PNG → embed in PDF. |
+| leaflet-image | 0.4.x | Capture map canvas to PNG | Purpose-built para Leaflet tile+vector export |
+| jsPDF | 2.x | Wrap PNG em PDF | Geração de PDF client-side, leve |
 ### Styling
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| Tailwind CSS | 4.x | UI styling | Utility-first, pairs well with Next.js App Router, no runtime CSS-in-JS overhead. |
-| shadcn/ui | latest | Component library | Unstyled accessible components built on Radix UI + Tailwind. Copy-paste model means no extra dependency overhead. Forms, dialogs, color pickers all available. |
+| Tailwind CSS | 4.x | UI styling | Utility-first, sem overhead de CSS-in-JS em runtime |
+| shadcn/ui | latest | Component library | Componentes acessíveis baseados em Radix UI + Tailwind. Modelo copy-paste sem dependência extra |
 ### Supporting Libraries
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
-| react-hook-form | 7.x | Form state management | Property registration form has 10+ fields; RHF avoids re-render on every keystroke. |
-| zod | 3.x | Schema validation | Validates GeoJSON imports server-side before persisting; validates form inputs. Pairs with react-hook-form via `@hookform/resolvers`. |
-| @types/geojson | 7946.x | TypeScript types for GeoJSON | Official TS types for `FeatureCollection`, `Feature<Polygon>`, etc. Zero runtime cost. |
+| react-hook-form | 7.x | Form state management | Formulário de propriedade com 10+ campos; RHF evita re-render por keystroke |
+| zod | 3.x | Schema validation (frontend) | Validação de inputs no frontend. Pairs com react-hook-form via `@hookform/resolvers` |
+| Pydantic | 2.x | Schema validation (backend) | Validação de GeoJSON imports no servidor, schemas de request/response — nativo do FastAPI |
+| @types/geojson | 7946.x | TypeScript types for GeoJSON | Tipos TS oficiais para `FeatureCollection`, `Feature<Polygon>` |
+| CORS middleware | — | Cross-origin requests | Necessário para SPA + API em domínios/portas diferentes |
 ## Alternatives Considered
 | Category | Recommended | Alternative | Why Not |
 |----------|-------------|-------------|---------|
-| Map library | Leaflet + React Leaflet | MapLibre GL JS | Overkill for SVG polygon display; requires WebGL context; larger bundle; no benefit for this use case |
-| Map library | Leaflet + React Leaflet | OpenLayers | More powerful GIS API but steeper learning curve, larger bundle; Leaflet handles all requirements here |
-| Auth | Better Auth | Clerk | Clerk is managed SaaS with per-user pricing that becomes expensive; no vendor lock-in needed for v1 |
-| Auth | Better Auth | Auth.js (NextAuth v5) | Auth.js has looser typing and more configuration ceremony for multi-tenant row-level isolation |
-| ORM | Prisma | Drizzle ORM | Drizzle is lighter but ecosystem/docs less mature; Prisma's generated types align well with PostGIS geometry handling |
-| Export | leaflet-image + jsPDF | html2canvas | html2canvas breaks on tile CORS; not purpose-built for maps |
-| Database | PostgreSQL + PostGIS | MongoDB | No spatial indexing advantage; Mongoose schemas are less ergonomic for relational Propriedade→Área hierarchy |
+| Architecture | Frontend + Backend separados | Monolito Next.js | Next.js não aproveita o ecossistema geoespacial Python; Prisma tem suporte limitado a PostGIS |
+| Map library | Leaflet + React Leaflet | MapLibre GL JS | Overkill para polígonos SVG; requer WebGL; sem benefício para este caso |
+| Map library | Leaflet + React Leaflet | OpenLayers | API GIS mais poderosa mas curva de aprendizado íngreme e bundle maior |
+| Auth | JWT (python-jose) | Better Auth | Better Auth é JS-only; JWT é padrão para APIs Python |
+| ORM | SQLAlchemy 2.0 + GeoAlchemy2 | Prisma | Prisma suporta PostGIS apenas via `Unsupported("geometry")` e raw SQL; SQLAlchemy + GeoAlchemy2 oferecem tipagem nativa |
+| Upload | FastAPI UploadFile | Multer | Multer é middleware Express/Node.js — incompatível com FastAPI |
+| Database | PostgreSQL + PostGIS | MongoDB | Sem vantagem em indexação espacial; schemas Mongoose menos ergonômicos para hierarquia relacional |
+| Export | leaflet-image + jsPDF | html2canvas | html2canvas falha em CORS de tiles; não é purpose-built para mapas |
 ## Installation
-# Create Next.js app
-# Database / ORM
-# Auth
-# Map
-# GeoJSON types
-# Forms & validation
-# Map export
+# Frontend (React + Vite)
+# Backend (FastAPI)
+# Database (PostgreSQL + PostGIS)
+# Auth (JWT + passlib)
+# Map (Leaflet + React Leaflet)
+# Geospatial (Turf.js + GDAL + Shapely)
+# Forms & validation (react-hook-form + zod + Pydantic)
+# Map export (leaflet-image + jsPDF)
 # UI components (shadcn — interactive CLI setup)
 ## Architecture Note for Roadmap
-- Auth endpoints (Better Auth handlers)
-- Property CRUD
-- GeoJSON file upload + parsing + persistence to PostGIS
+- Frontend: React SPA (Vite) — rotas, formulários, mapa, export
+- Backend: FastAPI — auth JWT, Property CRUD, GeoJSON upload/parsing/persistência em PostGIS
+- API REST entre frontend e backend (CORS configurado)
 ## Sources
-- [Next.js Multi-Tenant Guide](https://nextjs.org/docs/app/guides/multi-tenant) — official, HIGH confidence
-- [Prisma + Better Auth + Next.js](https://www.prisma.io/docs/guides/authentication/better-auth/nextjs) — official, HIGH confidence
+- [FastAPI Security - OAuth2 with Password](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/) — official, HIGH confidence
+- [GeoAlchemy2 Tutorial](https://geoalchemy-2.readthedocs.io/en/latest/tutorial.html) — official, HIGH confidence
+- [SQLAlchemy 2.0 + FastAPI](https://fastapi.tiangolo.com/tutorial/sql-databases/) — official, HIGH confidence
 - [Map libraries popularity comparison 2025](https://www.geoapify.com/map-libraries-comparison-leaflet-vs-maplibre-gl-vs-openlayers-trends-and-statistics/) — MEDIUM confidence
-- [React map library comparison — LogRocket](https://blog.logrocket.com/react-map-library-comparison/) — MEDIUM confidence
 - [leaflet-image + jsPDF example](https://gist.github.com/ka7eh/88761650efd3425080035e8535230d15) — MEDIUM confidence
-- [Prisma ORM Production Guide Next.js 2025](https://www.digitalapplied.com/blog/prisma-orm-production-guide-nextjs) — MEDIUM confidence
 - [PostGIS GeoJSON import guide](https://dohost.us/index.php/2025/11/15/importing-geospatial-data-shapefiles-geojson-kml-into-postgis/) — MEDIUM confidence
+- [GDAL/OGR Python bindings](https://gdal.org/api/python.html) — official, HIGH confidence
 <!-- GSD:stack-end -->
 
 <!-- GSD:conventions-start source:CONVENTIONS.md -->

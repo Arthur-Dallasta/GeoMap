@@ -42,8 +42,10 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Stack: Next.js 15 App Router + Better Auth + PostgreSQL + JSONB (no PostGIS)
-- Tiles: Stadia Maps (CORS-friendly, required for canvas export)
+- Stack: React SPA (Vite) + FastAPI (Python) + SQLAlchemy 2.0 + GeoAlchemy2 + PostgreSQL + PostGIS
+- Auth: JWT (python-jose + OAuth2PasswordBearer)
+- Upload: FastAPI UploadFile nativo (substitui Multer)
+- Geospatial: Turf.js (client) + GDAL/OGR + Shapely (server)
 - Export: leaflet-image + jsPDF (client-side)
 
 ### Pending Todos
@@ -52,12 +54,12 @@ None yet.
 
 ### Blockers/Concerns
 
-- Pitfall: CRS mismatch — validate WGS84 coordinate range at GeoJSON upload time
-- Pitfall: Canvas taint — use Stadia Maps + crossOrigin:true from Phase 3 onward
+- Pitfall: CRS mismatch — validate WGS84 coordinate range at GeoJSON upload time (GDAL pode reprojetar)
+- Pitfall: CORS configuration necessária entre frontend (Vite) e backend (FastAPI)
 - Pitfall: Cross-tenant leak — enforce userId filter at repository layer from first endpoint
 
 ## Session Continuity
 
 Last session: 2026-04-07
-Stopped at: Roadmap created; ready to plan Phase 1
+Stopped at: Stack migrado para React + FastAPI; Phase 1 precisa ser re-planejada
 Resume file: None
