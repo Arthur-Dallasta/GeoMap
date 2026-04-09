@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.core.database import Base, get_db
 
 # Banco de dados de teste separado
-TEST_DB_URL = settings.DATABASE_URL.replace("/geomap", "/geomap_test")
+TEST_DB_URL = settings.DATABASE_URL.rsplit("/geomap", 1)[0] + "/geomap_test"
 
 test_engine = create_engine(TEST_DB_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
