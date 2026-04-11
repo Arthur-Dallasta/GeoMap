@@ -19,6 +19,7 @@ def client():
     # Importar modelos para registrá-los no Base.metadata
     # Nota: app.properties.models será adicionado na Task 9
     import app.auth.models  # noqa: F401
+    import app.properties.models  # noqa: F401
 
     Base.metadata.create_all(bind=test_engine)
 
