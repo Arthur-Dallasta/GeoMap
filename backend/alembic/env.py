@@ -4,6 +4,7 @@ from alembic import context
 from app.core.database import Base
 import app.auth.models  # noqa: F401 — registers User in metadata
 import app.properties.models  # noqa: F401
+import app.areas.models  # noqa: F401
 
 config = context.config
 
