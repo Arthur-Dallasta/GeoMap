@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
 import AppLayout from "../components/AppLayout";
+import PropertyMap from "../components/PropertyMap";
+import AreaUploadModal from "../components/AreaUploadModal";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { api } from "../lib/api";
+import { useAreas } from "../hooks/useAreas";
 import type { Property } from "../types";
 
 export default function PropertyDetail() {
@@ -13,6 +16,9 @@ export default function PropertyDetail() {
   const [property, setProperty] = useState<Property | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const { areas, uploadArea } = useAreas(id!);
 
   useEffect(() => {
     api
@@ -61,7 +67,7 @@ export default function PropertyDetail() {
           </div>
         </div>
 
-        <div className="space-y-4 text-sm">
+        <div className="space-y-4 text-sm mb-6">
           <Row label="Localização" value={property.location} />
           <Row label="Município" value={`${property.municipality} — ${property.state}`} />
           <Row label="CEP" value={property.zip_code} />
@@ -72,6 +78,15 @@ export default function PropertyDetail() {
           <Row label="Área de produção vegetal" value={`${Number(property.crop_area_ha).toLocaleString("pt-BR")} ha`} />
           <Row label="Pessoas na produção" value={String(property.people_count)} />
         </div>
+
+        <PropertyMap areas={areas} onAddArea={() => setModalOpen(true)} />
+
+        <AreaUploadModal
+          open={modalOpen}
+          hasBoundary={areas.boundary !== null}
+          onClose={() => setModalOpen(false)}
+          onUpload={uploadArea}
+        />
       </div>
     </AppLayout>
   );
