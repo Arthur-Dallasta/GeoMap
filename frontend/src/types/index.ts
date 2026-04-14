@@ -29,3 +29,25 @@ export interface TokenResponse {
   access_token: string;
   token_type: string;
 }
+
+export interface AreaProperties {
+  id: string;
+  type: "boundary" | "internal";
+}
+
+export interface AreaFeature {
+  type: "Feature";
+  geometry: GeoJSON.Geometry;
+  properties: AreaProperties;
+}
+
+export interface AreaListResponse {
+  boundary: AreaFeature | null;
+  internal: AreaFeature[];
+}
+
+export interface AreaUploadResponse {
+  id: string;
+  type: string;
+  property_id: string;
+}
