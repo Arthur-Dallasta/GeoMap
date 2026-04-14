@@ -9,7 +9,7 @@ class AreaResponse(BaseModel):
     id: uuid.UUID
     property_id: uuid.UUID
     type: str
-    geometry: dict[str, Any]  # GeoJSON geometry object
+    geometry: dict[str, Any]
 
     model_config = {"from_attributes": True}
 
@@ -24,3 +24,7 @@ class AreaFeature(BaseModel):
 class AreaListResponse(BaseModel):
     boundary: AreaFeature | None
     internal: list[AreaFeature]
+
+
+class AreaAssignRequest(BaseModel):
+    category_id: uuid.UUID | None

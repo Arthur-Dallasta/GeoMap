@@ -23,6 +23,12 @@ class Area(Base):
     geometry: Mapped[WKBElement] = mapped_column(
         Geometry(geometry_type="GEOMETRY", srid=4326)
     )
+    category_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("categories.id", ondelete="SET NULL"),
+        nullable=True,
+        default=None,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

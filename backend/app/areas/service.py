@@ -13,10 +13,21 @@ from app.areas.schemas import AreaFeature, AreaListResponse
 
 
 def _area_to_feature(db: Session, area: Area) -> AreaFeature:
+    from app.categories.models import Category  # local import avoids circular dep
+
     geojson_str = db.scalar(func.ST_AsGeoJSON(area.geometry))
+    category_color = None
+    if area.category_id:
+        cat = db.get(Category, area.category_id)
+        category_color = cat.color if cat else None
     return AreaFeature(
         geometry=json.loads(geojson_str),
-        properties={"id": str(area.id), "type": area.type},
+        properties={
+            "id": str(area.id),
+            "type": area.type,
+            "category_id": str(area.category_id) if area.category_id else None,
+            "category_color": category_color,
+        },
     )
 
 
@@ -39,18 +50,15 @@ async def upload_area(
     area_type: str,
     file: UploadFile,
 ) -> Area:
-    # Validar tipo
     if area_type not in ("boundary", "internal"):
         raise HTTPException(status_code=400, detail="type must be 'boundary' or 'internal'")
 
-    # Ler e parsear GeoJSON
     try:
         content = await file.read()
         geojson = json.loads(content)
     except (json.JSONDecodeError, Exception):
         raise HTTPException(status_code=400, detail="Invalid GeoJSON file")
 
-    # Validar estrutura: deve ser Feature com Polygon ou MultiPolygon
     if geojson.get("type") != "Feature":
         raise HTTPException(status_code=400, detail="GeoJSON must be a Feature")
     geometry = geojson.get("geometry", {})
@@ -59,7 +67,6 @@ async def upload_area(
             status_code=400, detail="Geometry must be Polygon or MultiPolygon"
         )
 
-    # Validar geometria com Shapely
     try:
         geom = shapely_shape(geometry)
         if not geom.is_valid:
@@ -69,13 +76,11 @@ async def upload_area(
             raise
         raise HTTPException(status_code=400, detail="Invalid geometry")
 
-    # Substituir boundary anterior se necessário
     if area_type == "boundary":
         db.query(Area).filter(
             Area.property_id == property_id, Area.type == "boundary"
         ).delete()
 
-    # Salvar no banco
     area = Area(
         id=uuid.uuid4(),
         property_id=property_id,
@@ -83,6 +88,31 @@ async def upload_area(
         geometry=from_shape(geom, srid=4326),
     )
     db.add(area)
+    db.commit()
+    db.refresh(area)
+    return area
+
+
+def assign_category(
+    db: Session,
+    area: Area,
+    category_id: uuid.UUID | None,
+    property_id: uuid.UUID,
+) -> Area:
+    if category_id is not None:
+        from app.categories.models import Category
+
+        cat = (
+            db.query(Category)
+            .filter(Category.id == category_id, Category.property_id == property_id)
+            .first()
+        )
+        if not cat:
+            raise HTTPException(
+                status_code=400,
+                detail="Category does not belong to this property",
+            )
+    area.category_id = category_id
     db.commit()
     db.refresh(area)
     return area
