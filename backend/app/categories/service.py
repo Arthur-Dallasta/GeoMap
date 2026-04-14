@@ -1,7 +1,6 @@
 # backend/app/categories/service.py
 import uuid
 
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.categories.models import Category
@@ -12,7 +11,6 @@ def create_category(
     db: Session, property_id: uuid.UUID, data: CategoryCreate
 ) -> Category:
     cat = Category(
-        id=uuid.uuid4(),
         property_id=property_id,
         name=data.name,
         color=data.color,
@@ -39,12 +37,8 @@ def get_category(
 
 
 def update_category(db: Session, cat: Category, data: CategoryUpdate) -> Category:
-    if data.name is not None:
-        cat.name = data.name
-    if data.color is not None:
-        cat.color = data.color
-    if data.description is not None:
-        cat.description = data.description
+    for field in data.model_fields_set:
+        setattr(cat, field, getattr(data, field))
     db.commit()
     db.refresh(cat)
     return cat
