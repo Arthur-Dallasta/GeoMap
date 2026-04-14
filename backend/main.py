@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.auth.router import router as auth_router
 from app.properties.router import router as properties_router
 from app.areas.router import router as areas_router
+from app.categories.router import router as categories_router
 
 app = FastAPI(title="GeoMap API")
 
@@ -19,6 +20,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(properties_router)
 app.include_router(areas_router)
+app.include_router(categories_router)
 
 
 @app.get("/health")

@@ -24,6 +24,7 @@ def client():
     import app.auth.models  # noqa: F401
     import app.properties.models  # noqa: F401
     import app.areas.models  # noqa: F401
+    import app.categories.models  # noqa: F401
 
     Base.metadata.create_all(bind=test_engine)
 
