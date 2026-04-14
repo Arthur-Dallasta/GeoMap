@@ -20,14 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # PostGIS is pre-installed by a superuser on this DB; run CREATE EXTENSION
-    # outside the Alembic transaction so a permission denial doesn't abort it.
-    bind = op.get_bind()
-    with bind.engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
-        try:
-            conn.execute(sa.text("CREATE EXTENSION IF NOT EXISTS postgis"))
-        except Exception:
-            pass  # already installed — permission denial is safe to ignore
+    op.execute("CREATE EXTENSION IF NOT EXISTS postgis")
     op.create_table(
         'areas',
         sa.Column('id', sa.UUID(), nullable=False),
