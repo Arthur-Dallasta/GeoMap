@@ -1,3 +1,4 @@
+// frontend/src/types/index.ts
 export interface User {
   id: string;
   name: string;
@@ -30,9 +31,20 @@ export interface TokenResponse {
   token_type: string;
 }
 
+export interface Category {
+  id: string;
+  property_id: string;
+  name: string;
+  color: string;
+  description: string | null;
+  created_at: string;
+}
+
 export interface AreaProperties {
   id: string;
   type: "boundary" | "internal";
+  category_id: string | null;
+  category_color: string | null;
 }
 
 export interface AreaFeature {
@@ -50,4 +62,16 @@ export interface AreaUploadResponse {
   id: string;
   type: string;
   property_id: string;
+}
+
+export interface CategoryCreate {
+  name: string;
+  color: string;
+  description?: string | null;
+}
+
+export interface CategoryUpdate {
+  name?: string | null;
+  color?: string | null;
+  description?: string | null;
 }
