@@ -38,7 +38,8 @@ export default function CategoryModal({
       setDescription(initialValues?.description ?? "");
       setError(null);
     }
-  }, [open, initialValues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open) return null;
 
