@@ -10,6 +10,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: ["leaflet-image"],
+  },
   server: { port: 5173 },
   test: {
     globals: true,
