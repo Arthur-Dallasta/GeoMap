@@ -125,4 +125,21 @@ describe("PropertyMap", () => {
     expect(styleArg?.color).toBe("#ef4444");
     expect(styleArg?.fillColor).toBe("#ef4444");
   });
+
+  it("chama onMapReady com a instância do mapa ao montar", () => {
+    const onMapReady = vi.fn();
+    render(
+      <PropertyMap
+        areas={EMPTY_AREAS}
+        categories={[]}
+        onAddArea={vi.fn()}
+        onAssignCategory={vi.fn()}
+        onMapReady={onMapReady}
+      />
+    );
+    expect(onMapReady).toHaveBeenCalledTimes(1);
+    expect(onMapReady).toHaveBeenCalledWith(
+      expect.objectContaining({ setView: expect.any(Function) })
+    );
+  });
 });
