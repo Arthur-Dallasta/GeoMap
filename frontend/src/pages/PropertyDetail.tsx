@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
 import AppLayout from "../components/AppLayout";
 import PropertyMap from "../components/PropertyMap";
 import AreaUploadModal from "../components/AreaUploadModal";
+import CategoryManager from "../components/CategoryManager";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { api } from "../lib/api";
 import { useAreas } from "../hooks/useAreas";
+import { useCategories } from "../hooks/useCategories";
 import type { Property } from "../types";
 
 export default function PropertyDetail() {
@@ -18,7 +20,9 @@ export default function PropertyDetail() {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { areas, uploadArea } = useAreas(id!);
+  const { areas, uploadArea, refetch: refetchAreas } = useAreas(id!);
+  const { categories, createCategory, updateCategory, deleteCategory, assignToArea } =
+    useCategories(id!);
 
   useEffect(() => {
     api
@@ -27,6 +31,14 @@ export default function PropertyDetail() {
       .catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar"))
       .finally(() => setIsLoading(false));
   }, [id]);
+
+  const handleAssignCategory = useCallback(
+    async (areaId: string, categoryId: string | null) => {
+      await assignToArea(areaId, categoryId);
+      await refetchAreas();
+    },
+    [assignToArea, refetchAreas]
+  );
 
   async function handleDelete() {
     if (!confirm("Deseja excluir esta propriedade? Esta ação não pode ser desfeita.")) return;
@@ -79,7 +91,22 @@ export default function PropertyDetail() {
           <Row label="Pessoas na produção" value={String(property.people_count)} />
         </div>
 
-        <PropertyMap areas={areas} onAddArea={() => setModalOpen(true)} />
+        <PropertyMap
+          areas={areas}
+          categories={categories}
+          onAddArea={() => setModalOpen(true)}
+          onAssignCategory={handleAssignCategory}
+        />
+
+        <CategoryManager
+          categories={categories}
+          onCreateCategory={createCategory}
+          onUpdateCategory={updateCategory}
+          onDeleteCategory={async (catId) => {
+            await deleteCategory(catId);
+            await refetchAreas();
+          }}
+        />
 
         <AreaUploadModal
           open={modalOpen}
