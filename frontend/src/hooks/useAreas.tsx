@@ -27,7 +27,7 @@ export function useAreas(propertyId: string) {
   }, [fetchAreas]);
 
   const uploadArea = useCallback(
-    async (file: File, type: "boundary" | "internal") => {
+    async (file: File, type: "boundary" | "internal", categoryId?: string) => {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("type", type);
@@ -35,6 +35,11 @@ export function useAreas(propertyId: string) {
         `/properties/${propertyId}/areas/`,
         formData,
       );
+      if (categoryId) {
+        await api.patch(`/properties/${propertyId}/areas/${result.id}`, {
+          category_id: categoryId,
+        });
+      }
       await fetchAreas();
       return result;
     },
