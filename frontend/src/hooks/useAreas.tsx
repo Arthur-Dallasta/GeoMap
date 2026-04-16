@@ -2,6 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "../lib/api";
 import type { AreaListResponse, AreaUploadResponse } from "../types";
 
+export class CategoryAssignmentError extends Error {
+  constructor() {
+    super("Área criada, mas a categoria não foi atribuída. Atribua pelo mapa.");
+    this.name = "CategoryAssignmentError";
+  }
+}
+
 const EMPTY_AREAS: AreaListResponse = { boundary: null, internal: [] };
 
 export function useAreas(propertyId: string) {
@@ -35,15 +42,17 @@ export function useAreas(propertyId: string) {
         `/properties/${propertyId}/areas/`,
         formData,
       );
-      try {
-        if (categoryId) {
+      if (categoryId) {
+        try {
           await api.patch(`/properties/${propertyId}/areas/${result.id}`, {
             category_id: categoryId,
           });
+        } catch {
+          await fetchAreas();
+          throw new CategoryAssignmentError();
         }
-      } finally {
-        await fetchAreas();
       }
+      await fetchAreas();
       return result;
     },
     [propertyId, fetchAreas],

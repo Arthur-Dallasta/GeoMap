@@ -151,4 +151,20 @@ describe("AreaUploadModal — categoria", () => {
     );
     expect(onCreateCategory).not.toHaveBeenCalled();
   });
+
+  it("exibe erro e não chama onUpload quando onCreateCategory falha", async () => {
+    const failingCreate = vi.fn().mockRejectedValue(new Error("Servidor indisponível"));
+    render(<AreaUploadModal {...defaultProps} onCreateCategory={failingCreate} />);
+    fireEvent.click(screen.getByText("Área interna"));
+    selectFile(makeFile());
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "new" } });
+    fireEvent.change(screen.getByPlaceholderText("Ex: Plantio de soja"), {
+      target: { value: "Soja Nova" },
+    });
+    fireEvent.click(screen.getByText("Fazer upload"));
+    await waitFor(() =>
+      expect(screen.getByText("Servidor indisponível")).toBeInTheDocument()
+    );
+    expect(onUpload).not.toHaveBeenCalled();
+  });
 });

@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Category, CategoryCreate } from "../types";
+import { CategoryAssignmentError } from "../hooks/useAreas";
 
 const PALETTE = [
   "#ef4444", "#f97316", "#eab308", "#22c55e",
@@ -88,7 +90,12 @@ export default function AreaUploadModal({
       await onUpload(file, areaType, categoryId);
       handleClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro ao fazer upload");
+      if (e instanceof CategoryAssignmentError) {
+        toast.warning(e.message);
+        handleClose();
+      } else {
+        setError(e instanceof Error ? e.message : "Erro ao fazer upload");
+      }
     } finally {
       setLoading(false);
     }
