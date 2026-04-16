@@ -1,10 +1,13 @@
+// frontend/src/pages/PropertyDetail.tsx
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
+import L from "leaflet";
 import AppLayout from "../components/AppLayout";
 import PropertyMap from "../components/PropertyMap";
 import AreaUploadModal from "../components/AreaUploadModal";
 import CategoryManager from "../components/CategoryManager";
+import MapExportButtons from "../components/MapExportButtons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { api } from "../lib/api";
@@ -19,6 +22,7 @@ export default function PropertyDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
 
   const { areas, uploadArea, refetch: refetchAreas } = useAreas(id!);
   const { categories, createCategory, updateCategory, deleteCategory, assignToArea } =
@@ -96,7 +100,10 @@ export default function PropertyDetail() {
           categories={categories}
           onAddArea={() => setModalOpen(true)}
           onAssignCategory={handleAssignCategory}
+          onMapReady={setMapInstance}
         />
+
+        <MapExportButtons mapInstance={mapInstance} propertyName={property.name} />
 
         <CategoryManager
           categories={categories}
