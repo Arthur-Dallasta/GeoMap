@@ -27,3 +27,6 @@ Thumbs.db
 
 # Alembic (keep versions/, ignore local cache)
 backend/alembic/__pycache__/
+
+# Superpowers CLI session state
+.superpowers/
