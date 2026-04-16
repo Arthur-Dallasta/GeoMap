@@ -118,8 +118,10 @@ export default function PropertyDetail() {
         <AreaUploadModal
           open={modalOpen}
           hasBoundary={areas.boundary !== null}
+          categories={categories}
           onClose={() => setModalOpen(false)}
           onUpload={uploadArea}
+          onCreateCategory={createCategory}
         />
       </div>
     </AppLayout>
