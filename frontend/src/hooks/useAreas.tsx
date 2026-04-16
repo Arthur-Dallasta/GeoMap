@@ -35,12 +35,15 @@ export function useAreas(propertyId: string) {
         `/properties/${propertyId}/areas/`,
         formData,
       );
-      if (categoryId) {
-        await api.patch(`/properties/${propertyId}/areas/${result.id}`, {
-          category_id: categoryId,
-        });
+      try {
+        if (categoryId) {
+          await api.patch(`/properties/${propertyId}/areas/${result.id}`, {
+            category_id: categoryId,
+          });
+        }
+      } finally {
+        await fetchAreas();
       }
-      await fetchAreas();
       return result;
     },
     [propertyId, fetchAreas],

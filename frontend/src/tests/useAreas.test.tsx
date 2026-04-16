@@ -43,4 +43,14 @@ describe("useAreas.uploadArea", () => {
       { category_id: "cat-999" }
     );
   });
+
+  it("chama fetchAreas após o upload, independente de categoryId", async () => {
+    const { result } = renderHook(() => useAreas("prop-1"));
+    const file = new File(["{}"], "area.geojson");
+    await act(async () => {
+      await result.current.uploadArea(file, "boundary");
+    });
+    // api.get is called once on mount, once after upload = 2 calls total
+    expect(api.get).toHaveBeenCalledTimes(2);
+  });
 });
