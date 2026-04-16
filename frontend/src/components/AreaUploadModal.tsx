@@ -194,8 +194,9 @@ export default function AreaUploadModal({
             {isNewCategory && (
               <div className="mt-3 space-y-3 border border-border rounded-md p-3">
                 <div>
-                  <label className="text-sm font-medium block mb-1">Nome *</label>
+                  <label htmlFor="new-cat-name" className="text-sm font-medium block mb-1">Nome *</label>
                   <input
+                    id="new-cat-name"
                     type="text"
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
@@ -206,7 +207,7 @@ export default function AreaUploadModal({
                 <div>
                   <label className="text-sm font-medium block mb-2">Cor</label>
                   <div className="grid grid-cols-6 gap-2">
-                    {PALETTE.map((c) => (
+                    {PALETTE.map((c, index) => (
                       <button
                         key={c}
                         type="button"
@@ -216,16 +217,18 @@ export default function AreaUploadModal({
                           newCatColor === c && "ring-2 ring-offset-2 ring-white scale-110",
                         )}
                         style={{ backgroundColor: c }}
-                        aria-label={c}
+                        title={c}
+                        aria-label={`Cor ${index + 1}`}
                       />
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1">
+                  <label htmlFor="new-cat-description" className="text-sm font-medium block mb-1">
                     Descrição (opcional)
                   </label>
                   <textarea
+                    id="new-cat-description"
                     value={newCatDescription}
                     onChange={(e) => setNewCatDescription(e.target.value)}
                     placeholder="Ex: Área destinada ao cultivo de soja"
