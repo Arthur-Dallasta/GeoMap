@@ -3,7 +3,7 @@
 
 **Sistema de Gestão de Propriedades Rurais**
 
-Sistema web para cadastro e gestão de propriedades rurais. Produtores rurais registram suas propriedades com dados detalhados, importam dados georreferenciados (GeoJSON) coletados por aplicativo externo, e visualizam um mapa interativo personalizado com as áreas da propriedade identificadas e categorizadas. Cada área pode receber uma categoria criada pelo próprio usuário (com nome e cor), tornando o mapa visual e informativo.
+Sistema web para cadastro e gestão de propriedades rurais. Produtores rurais registram suas propriedades com dados detalhados, importam dados georreferenciados (GeoJSON) coletados por aplicativo externo, e visualizam um mapa interativo personalizado com as áreas da propriedade identificadas e categorizadas. Cada área pode receber uma categoria criada pelo próprio usuário (com nome, cor e descrição), tornando o mapa visual e informativo.
 
 **Core Value:** O produtor consegue visualizar um mapa personalizado de sua propriedade — com contorno geral e áreas internas coloridas por categoria — gerado a partir de dados georreferenciados importados.
 
@@ -11,9 +11,7 @@ Sistema web para cadastro e gestão de propriedades rurais. Produtores rurais re
 
 - **Formato de importação**: GeoJSON — formato padrão definido pelo app externo de coleta
 - **Hierarquia**: Dois níveis (Propriedade → Áreas) — estrutura suficiente para o caso de uso atual
-<!-- GSD:project-end -->
 
-<!-- GSD:stack-start source:research/STACK.md -->
 ## Technology Stack
 
 ## Architecture: Frontend + Backend Separados
@@ -113,27 +111,19 @@ Frontend React (SPA) e backend FastAPI (Python) como serviços independentes, co
 - [leaflet-image + jsPDF example](https://gist.github.com/ka7eh/88761650efd3425080035e8535230d15) — MEDIUM confidence
 - [PostGIS GeoJSON import guide](https://dohost.us/index.php/2025/11/15/importing-geospatial-data-shapefiles-geojson-kml-into-postgis/) — MEDIUM confidence
 - [GDAL/OGR Python bindings](https://gdal.org/api/python.html) — official, HIGH confidence
-<!-- GSD:stack-end -->
 
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
 Conventions not yet established. Will populate as patterns emerge during development.
-<!-- GSD:conventions-end -->
 
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
 
 Architecture not yet mapped. Follow existing patterns found in the codebase.
-<!-- GSD:architecture-end -->
 
-<!-- GSD:skills-start source:skills/ -->
 ## Project Skills
 
 No project skills found. Add skills to any of: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, or `.github/skills/` with a `SKILL.md` index file.
-<!-- GSD:skills-end -->
 
-<!-- GSD:workflow-start source:GSD defaults -->
 ## GSD Workflow Enforcement
 
 Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
@@ -144,13 +134,9 @@ Use these entry points:
 - `/gsd-execute-phase` for planned phase work
 
 Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-<!-- GSD:workflow-end -->
 
-
-
-<!-- GSD:profile-start -->
 ## Developer Profile
 
 > Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
 > This section is managed by `generate-claude-profile` -- do not edit manually.
-<!-- GSD:profile-end -->
+
