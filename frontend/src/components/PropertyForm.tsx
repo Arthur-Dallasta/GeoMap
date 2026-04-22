@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatZipCode } from "@/lib/utils";
 
 const schema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -49,12 +50,20 @@ export default function PropertyForm({
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = useForm<PropertyFormData>({
     resolver: zodResolver(schema) as any,
     defaultValues,
   });
+
+  const zipValue = watch("zip_code", defaultValues?.zip_code ?? "");
+
+  function handleZipChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setValue("zip_code", formatZipCode(e.target.value), { shouldValidate: true });
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -94,7 +103,7 @@ export default function PropertyForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="zip_code">CEP</Label>
-          <Input id="zip_code" placeholder="00000-000" maxLength={9} {...register("zip_code")} />
+          <Input id="zip_code" placeholder="00000-000" maxLength={9} value={zipValue} onChange={handleZipChange} />
           {errors.zip_code && <p className="text-sm text-destructive">{errors.zip_code.message}</p>}
         </div>
       </section>

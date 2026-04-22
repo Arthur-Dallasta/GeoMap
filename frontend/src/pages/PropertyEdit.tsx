@@ -49,7 +49,7 @@ export default function PropertyEdit() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl">
+      <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-semibold mb-6">Editar: {property.name}</h1>
         {error && <p className="text-destructive mb-4">{error}</p>}
         <PropertyForm defaultValues={defaultValues} onSubmit={onSubmit} submitLabel="Salvar alterações" />

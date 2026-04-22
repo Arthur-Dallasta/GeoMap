@@ -13,7 +13,15 @@ export default defineConfig({
   optimizeDeps: {
     include: ["leaflet-image"],
   },
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    proxy: {
+      "/api": {
+        target: process.env.VITE_API_URL || "http://localhost:8000",
+        changeOrigin: true,
+      },
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",

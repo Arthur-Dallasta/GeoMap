@@ -60,7 +60,7 @@ export default function PropertyDetail() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl">
+      <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-heading font-semibold">{property.name}</h1>
           <div className="flex gap-2">
@@ -75,7 +75,6 @@ export default function PropertyDetail() {
               variant="destructive"
               size="sm"
               onClick={handleDelete}
-              className="min-h-[44px]"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Excluir

@@ -91,7 +91,7 @@ export default function PropertyMap({
   // Inicializar mapa
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current).setView([-15, -52], 4);
+    const map = L.map(containerRef.current, { attributionControl: false }).setView([-15, -52], 4);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
       crossOrigin: "",
@@ -186,7 +186,7 @@ export default function PropertyMap({
       <button
         onClick={onAddArea}
         aria-label="Adicionar área"
-        className="absolute bottom-3 right-3 z-[400] w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-500 text-xl leading-none"
+        className="absolute bottom-3 right-3 z-[400] w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-500 text-2xl leading-none"
       >
         +
       </button>
