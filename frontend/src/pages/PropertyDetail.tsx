@@ -62,7 +62,7 @@ export default function PropertyDetail() {
     <AppLayout>
       <div className="max-w-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold">{property.name}</h1>
+          <h1 className="text-2xl font-heading font-semibold">{property.name}</h1>
           <div className="flex gap-2">
             <Link
               to={`/properties/${id}/edit`}
@@ -83,16 +83,21 @@ export default function PropertyDetail() {
           </div>
         </div>
 
-        <div className="space-y-4 text-sm mb-6">
+        {/* Location info */}
+        <div className="bg-card border rounded-lg p-4 mb-4 space-y-2 text-sm anim-in-1">
           <Row label="Localização" value={property.location} />
           <Row label="Município" value={`${property.municipality} — ${property.state}`} />
           <Row label="CEP" value={property.zip_code} />
-          <Row label="Área total" value={`${Number(property.total_area_ha).toLocaleString("pt-BR")} ha`} />
-          <Row label="Área própria" value={`${Number(property.own_area_ha).toLocaleString("pt-BR")} ha`} />
-          <Row label="Área arrendada" value={`${Number(property.leased_area_ha).toLocaleString("pt-BR")} ha`} />
-          <Row label="Área protegida" value={`${Number(property.protected_area_ha).toLocaleString("pt-BR")} ha`} />
-          <Row label="Área de produção vegetal" value={`${Number(property.crop_area_ha).toLocaleString("pt-BR")} ha`} />
-          <Row label="Pessoas na produção" value={String(property.people_count)} />
+        </div>
+
+        {/* Area stats grid */}
+        <div className="grid grid-cols-2 gap-3 mb-6 anim-in-2">
+          <StatCard label="Área total" value={`${Number(property.total_area_ha).toLocaleString("pt-BR")} ha`} accent />
+          <StatCard label="Área própria" value={`${Number(property.own_area_ha).toLocaleString("pt-BR")} ha`} />
+          <StatCard label="Área arrendada" value={`${Number(property.leased_area_ha).toLocaleString("pt-BR")} ha`} />
+          <StatCard label="Área protegida" value={`${Number(property.protected_area_ha).toLocaleString("pt-BR")} ha`} />
+          <StatCard label="Produção vegetal" value={`${Number(property.crop_area_ha).toLocaleString("pt-BR")} ha`} />
+          <StatCard label="Pessoas na produção" value={String(property.people_count)} />
         </div>
 
         <PropertyMap
@@ -130,9 +135,22 @@ export default function PropertyDetail() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex gap-4 py-2 border-b">
-      <span className="font-medium w-48 shrink-0">{label}</span>
-      <span className="text-muted-foreground">{value}</span>
+    <div className="flex gap-4 py-1.5">
+      <span className="font-medium text-muted-foreground w-36 shrink-0 text-xs uppercase tracking-wide">{label}</span>
+      <span className="text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className={`rounded-lg border px-4 py-3 ${accent ? "bg-primary text-primary-foreground border-primary" : "bg-card"}`}>
+      <p className={`text-xs uppercase tracking-wide mb-1 ${accent ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+        {label}
+      </p>
+      <p className={`text-lg font-heading font-semibold ${accent ? "text-primary-foreground" : "text-foreground"}`}>
+        {value}
+      </p>
     </div>
   );
 }

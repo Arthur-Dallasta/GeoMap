@@ -1,4 +1,4 @@
-import { MapPin, Users, Maximize } from "lucide-react";
+import { MapPin, Users, Maximize, Pencil, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
@@ -11,37 +11,53 @@ interface PropertyCardProps {
 
 export default function PropertyCard({ property }: PropertyCardProps) {
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">{property.name}</CardTitle>
+    <Card className="group border-l-[3px] border-l-primary hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-heading font-semibold leading-tight">
+          {property.name}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-2.5">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4" />
+          <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
           <span>
             {property.municipality} — {property.state}
           </span>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Maximize className="h-4 w-4" />
-          <span>{Number(property.total_area_ha).toLocaleString("pt-BR")} ha</span>
+          <Maximize className="h-3.5 w-3.5 shrink-0 text-primary/60" />
+          <span>
+            <strong className="text-foreground font-medium">
+              {Number(property.total_area_ha).toLocaleString("pt-BR")}
+            </strong>{" "}
+            ha
+          </span>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Users className="h-4 w-4" />
+          <Users className="h-3.5 w-3.5 shrink-0 text-primary/60" />
           <span>{property.people_count} pessoas</span>
         </div>
-        <div className="flex gap-2 pt-2">
+
+        <div className="flex items-center gap-2 pt-3 border-t border-border/60">
           <Link
             to={`/properties/${property.id}`}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "flex-1 justify-between text-xs h-8"
+            )}
           >
             Ver detalhes
+            <ArrowRight className="h-3 w-3 ml-1" />
           </Link>
           <Link
             to={`/properties/${property.id}/edit`}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-8 w-8 p-0 flex items-center justify-center"
+            )}
+            title="Editar"
           >
-            Editar
+            <Pencil className="h-3 w-3" />
           </Link>
         </div>
       </CardContent>
