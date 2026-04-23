@@ -17,9 +17,11 @@ def _area_to_feature(db: Session, area: Area) -> AreaFeature:
 
     geojson_str = db.scalar(func.ST_AsGeoJSON(area.geometry))
     category_color = None
+    category_name = None
     if area.category_id:
         cat = db.get(Category, area.category_id)
         category_color = cat.color if cat else None
+        category_name = cat.name if cat else None
     return AreaFeature(
         geometry=json.loads(geojson_str),
         properties={
@@ -27,6 +29,7 @@ def _area_to_feature(db: Session, area: Area) -> AreaFeature:
             "type": area.type,
             "category_id": str(area.category_id) if area.category_id else None,
             "category_color": category_color,
+            "category_name": category_name,
         },
     )
 
@@ -59,8 +62,13 @@ async def upload_area(
     except (json.JSONDecodeError, Exception):
         raise HTTPException(status_code=400, detail="Invalid GeoJSON file")
 
-    if geojson.get("type") != "Feature":
-        raise HTTPException(status_code=400, detail="GeoJSON must be a Feature")
+    if geojson.get("type") == "FeatureCollection":
+        features = geojson.get("features", [])
+        if not features:
+            raise HTTPException(status_code=400, detail="FeatureCollection is empty")
+        geojson = features[0]
+    elif geojson.get("type") != "Feature":
+        raise HTTPException(status_code=400, detail="GeoJSON must be a Feature or FeatureCollection")
     geometry = geojson.get("geometry", {})
     if geometry.get("type") not in ("Polygon", "MultiPolygon"):
         raise HTTPException(

@@ -6,6 +6,7 @@ import L from "leaflet";
 import AppLayout from "../components/AppLayout";
 import PropertyMap from "../components/PropertyMap";
 import AreaUploadModal from "../components/AreaUploadModal";
+import AreaDetailPanel from "../components/AreaDetailPanel";
 import CategoryManager from "../components/CategoryManager";
 import MapExportButtons from "../components/MapExportButtons";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { api } from "../lib/api";
 import { useAreas } from "../hooks/useAreas";
 import { useCategories } from "../hooks/useCategories";
-import type { Property } from "../types";
+import type { AreaFeature, Property } from "../types";
 
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
@@ -24,9 +25,16 @@ export default function PropertyDetail() {
   const [modalOpen, setModalOpen] = useState(false);
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
 
-  const { areas, uploadArea, refetch: refetchAreas } = useAreas(id!);
+  const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
+  const { areas, uploadArea, deleteArea, refetch: refetchAreas } = useAreas(id!);
   const { categories, createCategory, updateCategory, deleteCategory, assignToArea } =
     useCategories(id!);
+
+  const selectedArea: AreaFeature | null = selectedAreaId
+    ? ([...(areas.boundary ? [areas.boundary] : []), ...areas.internal].find(
+        (a) => a.properties.id === selectedAreaId
+      ) ?? null)
+    : null;
 
   useEffect(() => {
     api
@@ -42,6 +50,14 @@ export default function PropertyDetail() {
       await refetchAreas();
     },
     [assignToArea, refetchAreas]
+  );
+
+  const handleDeleteArea = useCallback(
+    async (areaId: string) => {
+      await deleteArea(areaId);
+      setSelectedAreaId(null);
+    },
+    [deleteArea]
   );
 
   async function handleDelete() {
@@ -101,11 +117,20 @@ export default function PropertyDetail() {
 
         <PropertyMap
           areas={areas}
-          categories={categories}
           onAddArea={() => setModalOpen(true)}
-          onAssignCategory={handleAssignCategory}
+          onAreaClick={(area) => setSelectedAreaId(area.properties.id)}
           onMapReady={setMapInstance}
         />
+
+        {selectedArea && (
+          <AreaDetailPanel
+            area={selectedArea}
+            categories={categories}
+            onClose={() => setSelectedAreaId(null)}
+            onAssignCategory={handleAssignCategory}
+            onDelete={handleDeleteArea}
+          />
+        )}
 
         <MapExportButtons mapInstance={mapInstance} propertyName={property.name} />
 

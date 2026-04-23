@@ -45,6 +45,7 @@ export interface AreaProperties {
   type: "boundary" | "internal";
   category_id: string | null;
   category_color: string | null;
+  category_name: string | null;
 }
 
 export interface AreaFeature {

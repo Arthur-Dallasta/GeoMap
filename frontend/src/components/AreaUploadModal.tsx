@@ -124,10 +124,10 @@ export default function AreaUploadModal({
             <button
               onClick={() => setAreaType("boundary")}
               className={cn(
-                "px-4 py-2 rounded-md text-sm border transition-colors",
+                "px-4 py-2 rounded-md text-sm border transition-colors cursor-pointer",
                 areaType === "boundary"
-                  ? "border-blue-500 bg-blue-950 text-blue-300"
-                  : "border-border text-muted-foreground hover:border-blue-500/50",
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border text-muted-foreground hover:border-primary/50",
               )}
             >
               Contorno geral
@@ -135,10 +135,10 @@ export default function AreaUploadModal({
             <button
               onClick={() => setAreaType("internal")}
               className={cn(
-                "px-4 py-2 rounded-md text-sm border transition-colors",
+                "px-4 py-2 rounded-md text-sm border transition-colors cursor-pointer",
                 areaType === "internal"
-                  ? "border-blue-500 bg-blue-950 text-blue-300"
-                  : "border-border text-muted-foreground hover:border-blue-500/50",
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border text-muted-foreground hover:border-primary/50",
               )}
             >
               Área interna
@@ -220,13 +220,19 @@ export default function AreaUploadModal({
                         type="button"
                         onClick={() => setNewCatColor(c)}
                         className={cn(
-                          "w-8 h-8 rounded-full transition-transform hover:scale-110",
-                          newCatColor === c && "ring-2 ring-offset-2 ring-white scale-110",
+                          "w-8 h-8 rounded-full transition-all hover:scale-110 cursor-pointer relative flex items-center justify-center",
+                          newCatColor === c && "ring-2 ring-offset-2 ring-gray-800 dark:ring-white scale-110",
                         )}
                         style={{ backgroundColor: c }}
                         title={c}
                         aria-label={`Cor ${index + 1}`}
-                      />
+                      >
+                        {newCatColor === c && (
+                          <svg className="w-4 h-4 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
                     ))}
                   </div>
                 </div>

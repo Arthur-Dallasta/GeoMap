@@ -81,37 +81,37 @@ const AREAS_WITH_CATEGORY: AreaListResponse = {
 
 describe("PropertyMap", () => {
   const onAddArea = vi.fn();
-  const onAssignCategory = vi.fn();
+  const onAreaClick = vi.fn();
 
   beforeEach(() => {
     onAddArea.mockClear();
-    onAssignCategory.mockClear();
+    onAreaClick.mockClear();
     (L.geoJSON as ReturnType<typeof vi.fn>).mockClear();
   });
 
   it("renderiza o container do mapa", () => {
-    render(<PropertyMap areas={EMPTY_AREAS} categories={[]} onAddArea={onAddArea} onAssignCategory={onAssignCategory} />);
+    render(<PropertyMap areas={EMPTY_AREAS} onAddArea={onAddArea} onAreaClick={onAreaClick} />);
     expect(screen.getByTestId("map-container")).toBeInTheDocument();
   });
 
   it("exibe placeholder quando não há áreas", () => {
-    render(<PropertyMap areas={EMPTY_AREAS} categories={[]} onAddArea={onAddArea} onAssignCategory={onAssignCategory} />);
+    render(<PropertyMap areas={EMPTY_AREAS} onAddArea={onAddArea} onAreaClick={onAreaClick} />);
     expect(screen.getByText("Nenhuma área cadastrada")).toBeInTheDocument();
   });
 
   it("não exibe placeholder quando há áreas", () => {
-    render(<PropertyMap areas={AREAS_WITH_BOUNDARY} categories={[]} onAddArea={onAddArea} onAssignCategory={onAssignCategory} />);
+    render(<PropertyMap areas={AREAS_WITH_BOUNDARY} onAddArea={onAddArea} onAreaClick={onAreaClick} />);
     expect(screen.queryByText("Nenhuma área cadastrada")).not.toBeInTheDocument();
   });
 
   it("chama onAddArea ao clicar no botão +", () => {
-    render(<PropertyMap areas={EMPTY_AREAS} categories={[]} onAddArea={onAddArea} onAssignCategory={onAssignCategory} />);
+    render(<PropertyMap areas={EMPTY_AREAS} onAddArea={onAddArea} onAreaClick={onAreaClick} />);
     fireEvent.click(screen.getByLabelText("Adicionar área"));
     expect(onAddArea).toHaveBeenCalledTimes(1);
   });
 
   it("área interna sem categoria usa cor padrão (#60a5fa stroke, #1e40af fill)", () => {
-    render(<PropertyMap areas={AREAS_WITH_INTERNAL} categories={[]} onAddArea={onAddArea} onAssignCategory={onAssignCategory} />);
+    render(<PropertyMap areas={AREAS_WITH_INTERNAL} onAddArea={onAddArea} onAreaClick={onAreaClick} />);
     const calls = (L.geoJSON as ReturnType<typeof vi.fn>).mock.calls;
     const styleArg = calls[calls.length - 1]?.[1]?.style;
     expect(styleArg?.color).toBe("#60a5fa");
@@ -119,7 +119,7 @@ describe("PropertyMap", () => {
   });
 
   it("área interna com category_color usa a cor da categoria para stroke e fill", () => {
-    render(<PropertyMap areas={AREAS_WITH_CATEGORY} categories={[]} onAddArea={onAddArea} onAssignCategory={onAssignCategory} />);
+    render(<PropertyMap areas={AREAS_WITH_CATEGORY} onAddArea={onAddArea} onAreaClick={onAreaClick} />);
     const calls = (L.geoJSON as ReturnType<typeof vi.fn>).mock.calls;
     const styleArg = calls[calls.length - 1]?.[1]?.style;
     expect(styleArg?.color).toBe("#ef4444");
@@ -131,9 +131,8 @@ describe("PropertyMap", () => {
     render(
       <PropertyMap
         areas={EMPTY_AREAS}
-        categories={[]}
         onAddArea={vi.fn()}
-        onAssignCategory={vi.fn()}
+        onAreaClick={vi.fn()}
         onMapReady={onMapReady}
       />
     );
