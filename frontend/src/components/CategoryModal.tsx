@@ -87,12 +87,18 @@ export default function CategoryModal({
                 type="button"
                 onClick={() => setColor(c)}
                 className={cn(
-                  "w-8 h-8 rounded-full transition-transform hover:scale-110",
-                  color === c && "ring-2 ring-offset-2 ring-white scale-110"
+                  "w-8 h-8 rounded-full transition-all hover:scale-110 relative flex items-center justify-center",
+                  color === c && "ring-2 ring-offset-2 ring-gray-800 dark:ring-white scale-110"
                 )}
                 style={{ backgroundColor: c }}
                 aria-label={c}
-              />
+              >
+                {color === c && (
+                  <svg className="w-4 h-4 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
             ))}
           </div>
         </div>

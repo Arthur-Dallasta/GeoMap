@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -24,8 +24,8 @@
   --muted-foreground: oklch(0.52 0.025 88);
   --accent: oklch(0.58 0.13 55);
   --accent-foreground: oklch(0.98 0 0);
-  --border: oklch(0.875 0.02 88);
-  --input: oklch(0.875 0.02 88);
+  --border: oklch(0.76 0.03 88);
+  --input: oklch(0.76 0.03 88);
   --ring: oklch(0.32 0.11 145);
   --chart-1: oklch(0.32 0.11 145);
   --chart-2: oklch(0.52 0.10 145);
@@ -44,7 +44,7 @@
 }
 
 @theme inline {
-  --font-heading: 'Fraunces', Georgia, serif;
+  --font-heading: 'Inter', sans-serif;
   --font-sans: 'Geist Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -102,8 +102,8 @@
   --accent: oklch(0.58 0.13 55);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: oklch(1 0 0 / 22%);
+  --input: oklch(1 0 0 / 25%);
   --ring: oklch(0.62 0.13 145);
   --chart-1: oklch(0.62 0.13 145);
   --chart-2: oklch(0.52 0.10 145);
@@ -153,3 +153,19 @@
 .anim-in-2 { animation: fade-slide-up 0.45s ease 0.12s both; }
 .anim-in-3 { animation: fade-slide-up 0.45s ease 0.18s both; }
 .anim-in-4 { animation: fade-slide-up 0.45s ease 0.24s both; }
+
+/* Leaflet polygon category labels */
+.area-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  font-family: var(--font-sans);
+  text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.7);
+  pointer-events: none !important;
+  white-space: nowrap;
+  padding: 0 !important;
+  transition: font-size 0.15s ease;
+}
+.area-label::before { display: none !important; }

@@ -2,86 +2,43 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { AreaListResponse, Category } from "../types";
+import { LocateFixed } from "lucide-react";
+import type { AreaFeature, AreaListResponse } from "../types";
 
 interface PropertyMapProps {
   areas: AreaListResponse;
-  categories: Category[];
   onAddArea: () => void;
-  onAssignCategory: (areaId: string, categoryId: string | null) => void;
+  onAreaClick: (area: AreaFeature) => void;
   onMapReady?: (map: L.Map) => void;
 }
 
-function buildCategoryPopup(
-  categories: Category[],
-  currentCategoryId: string | null
-): HTMLElement {
-  const div = document.createElement("div");
-  div.style.minWidth = "180px";
+function calcLabelFontSize(zoom: number): number {
+  // Hide below zoom 11; scale from 8px to 16px above that
+  if (zoom < 11) return 0;
+  return Math.max(8, Math.min(16, zoom - 2));
+}
 
-  const title = document.createElement("p");
-  title.style.cssText = "font-size:13px;font-weight:600;margin:0 0 8px 0;color:#f1f5f9";
-  title.textContent = "Atribuir categoria";
-  div.appendChild(title);
-
-  if (categories.length === 0) {
-    const empty = document.createElement("p");
-    empty.style.cssText = "font-size:12px;color:#94a3b8";
-    empty.textContent = "Nenhuma categoria cadastrada";
-    div.appendChild(empty);
-    return div;
-  }
-
-  const grid = document.createElement("div");
-  grid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px";
-
-  categories.forEach((cat) => {
-    const btn = document.createElement("button");
-    btn.dataset.catId = cat.id;
-    btn.style.cssText = `
-      display:flex;align-items:center;gap:6px;padding:5px 8px;
-      border-radius:4px;border:1px solid ${cat.id === currentCategoryId ? "#e2e8f0" : "#334155"};
-      background:transparent;cursor:pointer;font-size:12px;color:#f1f5f9;
-      text-align:left;
-    `;
-    const swatch = document.createElement("span");
-    swatch.style.cssText = `
-      width:10px;height:10px;border-radius:50%;
-      background:${cat.color};flex-shrink:0;
-    `;
-    btn.appendChild(swatch);
-    btn.appendChild(document.createTextNode(cat.name));
-    grid.appendChild(btn);
+function applyLabelFontSizes(zoom: number) {
+  const fontSize = calcLabelFontSize(zoom);
+  document.querySelectorAll<HTMLElement>(".area-label").forEach((el) => {
+    el.style.fontSize = `${fontSize}px`;
   });
-
-  div.appendChild(grid);
-
-  if (currentCategoryId) {
-    const removeBtn = document.createElement("button");
-    removeBtn.dataset.remove = "true";
-    removeBtn.style.cssText =
-      "font-size:12px;color:#f87171;background:transparent;border:none;cursor:pointer;padding:2px 0;display:block";
-    removeBtn.textContent = "Remover categoria";
-    div.appendChild(removeBtn);
-  }
-
-  return div;
 }
 
 export default function PropertyMap({
   areas,
-  categories,
   onAddArea,
-  onAssignCategory,
+  onAreaClick,
   onMapReady,
 }: PropertyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const onAssignCategoryRef = useRef(onAssignCategory);
+  const boundsRef = useRef<L.LatLngBounds | null>(null);
+  const onAreaClickRef = useRef(onAreaClick);
   const onMapReadyRef = useRef(onMapReady);
 
   useEffect(() => {
-    onAssignCategoryRef.current = onAssignCategory;
+    onAreaClickRef.current = onAreaClick;
   });
 
   useEffect(() => {
@@ -98,13 +55,16 @@ export default function PropertyMap({
     }).addTo(map);
     mapRef.current = map;
     onMapReadyRef.current?.(map);
+
+    map.on("zoomend", () => applyLabelFontSizes(map.getZoom()));
+
     return () => {
       map.remove();
       mapRef.current = null;
     };
   }, []);
 
-  // Atualizar camadas ao mudar áreas ou categorias
+  // Atualizar camadas ao mudar áreas
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -116,16 +76,17 @@ export default function PropertyMap({
     const bounds: L.LatLngBounds[] = [];
 
     if (areas.boundary) {
-      const layer = L.geoJSON(areas.boundary as GeoJSON.Feature, {
+      const boundaryFeature = areas.boundary;
+      const layer = L.geoJSON(boundaryFeature as GeoJSON.Feature, {
         style: { color: "#4ade80", fillColor: "#2d7a4f", fillOpacity: 0.4, weight: 2 },
       }).addTo(map);
+      layer.on("click", () => onAreaClickRef.current(boundaryFeature));
       bounds.push(layer.getBounds());
     }
 
     areas.internal.forEach((feature) => {
-      const areaId = feature.properties.id;
       const categoryColor = feature.properties.category_color;
-      const currentCategoryId = feature.properties.category_id;
+      const categoryName = feature.properties.category_name;
       const fillColor = categoryColor ?? "#1e40af";
       const strokeColor = categoryColor ?? "#60a5fa";
 
@@ -133,40 +94,34 @@ export default function PropertyMap({
         style: { color: strokeColor, fillColor, fillOpacity: 0.4, weight: 1.5 },
       }).addTo(map);
 
-      layer.on("click", (e: L.LeafletMouseEvent) => {
-        const popupEl = buildCategoryPopup(categories, currentCategoryId);
-
-        const popup = L.popup({ minWidth: 200 })
-          .setLatLng(e.latlng)
-          .setContent(popupEl);
-
-        popup.on("add", () => {
-          popupEl.querySelectorAll<HTMLButtonElement>("[data-cat-id]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              onAssignCategoryRef.current(areaId, btn.dataset.catId!);
-              map.closePopup();
-            });
-          });
-          const removeBtn = popupEl.querySelector<HTMLButtonElement>("[data-remove]");
-          removeBtn?.addEventListener("click", () => {
-            onAssignCategoryRef.current(areaId, null);
-            map.closePopup();
-          });
-        });
-
-        popup.openOn(map);
-      });
-
+      layer.on("click", () => onAreaClickRef.current(feature));
       bounds.push(layer.getBounds());
+
+      if (categoryName) {
+        layer.bindTooltip(categoryName, {
+          permanent: true,
+          direction: "center",
+          className: "area-label",
+        });
+      }
     });
 
     if (bounds.length > 0) {
       const combined = bounds.reduce((acc, b) => acc.extend(b));
+      boundsRef.current = combined;
       map.fitBounds(combined, { padding: [20, 20] });
     }
-  }, [areas, categories]);
+
+    setTimeout(() => applyLabelFontSizes(map.getZoom()), 0);
+  }, [areas]);
 
   const isEmpty = !areas.boundary && areas.internal.length === 0;
+
+  function handleRecenter() {
+    if (mapRef.current && boundsRef.current) {
+      mapRef.current.fitBounds(boundsRef.current, { padding: [20, 20] });
+    }
+  }
 
   return (
     <div className="relative">
@@ -183,13 +138,24 @@ export default function PropertyMap({
           </p>
         </div>
       )}
-      <button
-        onClick={onAddArea}
-        aria-label="Adicionar área"
-        className="absolute bottom-3 right-3 z-[400] w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-500 text-2xl leading-none"
-      >
-        +
-      </button>
+      <div className="absolute bottom-3 right-3 z-[400] flex flex-col gap-2">
+        {!isEmpty && (
+          <button
+            onClick={handleRecenter}
+            aria-label="Centralizar mapa"
+            className="w-12 h-12 rounded-full bg-background/90 text-foreground border border-border flex items-center justify-center shadow hover:bg-background cursor-pointer transition-colors"
+          >
+            <LocateFixed className="w-4 h-4" />
+          </button>
+        )}
+        <button
+          onClick={onAddArea}
+          aria-label="Adicionar área"
+          className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:bg-primary/80 text-2xl leading-none cursor-pointer transition-colors"
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }

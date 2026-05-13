@@ -10,30 +10,89 @@ interface MapExportButtonsProps {
   propertyName: string;
 }
 
-function getCanvas(map: L.Map): Promise<HTMLCanvasElement> {
-  return new Promise((resolve, reject) => {
-    leafletImage(map, (err, canvas) => {
-      if (err) reject(err);
-      else resolve(canvas);
-    });
+async function buildExportCanvas(map: L.Map): Promise<HTMLCanvasElement> {
+  const container = map.getContainer();
+  const containerRect = container.getBoundingClientRect();
+
+  // ── Capture everything BEFORE leaflet-image manipulates the DOM ──
+
+  // SVG overlay (GeoJSON polygons)
+  const svgEl = container.querySelector<SVGSVGElement>(".leaflet-overlay-pane svg");
+  const svgRect = svgEl?.getBoundingClientRect();
+  const svgData = svgEl ? new XMLSerializer().serializeToString(svgEl) : null;
+  // Visual offset of the SVG relative to the map container (accounts for all CSS transforms)
+  const svgOffsetX = svgRect ? svgRect.left - containerRect.left : 0;
+  const svgOffsetY = svgRect ? svgRect.top - containerRect.top : 0;
+
+  // Category name labels
+  const labelData = Array.from(container.querySelectorAll<HTMLElement>(".area-label"))
+    .map((el) => {
+      const r = el.getBoundingClientRect();
+      const fontSize = parseFloat(el.style.fontSize) || 0;
+      return {
+        text: el.textContent || "",
+        fontSize,
+        x: r.left - containerRect.left + r.width / 2,
+        y: r.top - containerRect.top + r.height / 2,
+      };
+    })
+    .filter((l) => l.text && l.fontSize > 0);
+
+  // ── Tile canvas via leaflet-image ──
+  const canvas = await new Promise<HTMLCanvasElement>((res, rej) =>
+    leafletImage(map, (err, c) => (err ? rej(new Error(err)) : res(c)))
+  );
+  const ctx = canvas.getContext("2d")!;
+
+  // ── Composite SVG polygons onto the tile canvas ──
+  if (svgData) {
+    const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    try {
+      await new Promise<void>((res) => {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, svgOffsetX, svgOffsetY);
+          res();
+        };
+        img.onerror = () => res(); // fail silently — tiles still export
+        img.src = url;
+      });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  // ── Draw category name labels ──
+  labelData.forEach(({ text, fontSize, x, y }) => {
+    ctx.save();
+    ctx.font = `600 ${fontSize}px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    // Dark outline for readability over any polygon color
+    ctx.strokeStyle = "rgba(0,0,0,0.85)";
+    ctx.lineWidth = 3;
+    ctx.strokeText(text, x, y);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(text, x, y);
+    ctx.restore();
   });
+
+  return canvas;
 }
 
-export default function MapExportButtons({
-  mapInstance,
-  propertyName,
-}: MapExportButtonsProps) {
+export default function MapExportButtons({ mapInstance, propertyName }: MapExportButtonsProps) {
   const [exporting, setExporting] = useState(false);
 
   async function exportPng() {
     if (!mapInstance) return;
     setExporting(true);
     try {
-      const canvas = await getCanvas(mapInstance);
-      const dataUrl = canvas.toDataURL("image/png");
+      const canvas = await buildExportCanvas(mapInstance);
       const link = document.createElement("a");
       link.download = `${propertyName}-mapa.png`;
-      link.href = dataUrl;
+      link.href = canvas.toDataURL("image/png");
       link.click();
     } finally {
       setExporting(false);
@@ -44,7 +103,7 @@ export default function MapExportButtons({
     if (!mapInstance) return;
     setExporting(true);
     try {
-      const canvas = await getCanvas(mapInstance);
+      const canvas = await buildExportCanvas(mapInstance);
       const dataUrl = canvas.toDataURL("image/png");
       const w = canvas.width;
       const h = canvas.height;
@@ -59,20 +118,10 @@ export default function MapExportButtons({
 
   return (
     <div className="flex gap-2 mt-3">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={exportPng}
-        disabled={exporting || !mapInstance}
-      >
+      <Button variant="outline" size="sm" onClick={exportPng} disabled={exporting || !mapInstance}>
         {exporting ? "Exportando..." : "Exportar PNG"}
       </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={exportPdf}
-        disabled={exporting || !mapInstance}
-      >
+      <Button variant="outline" size="sm" onClick={exportPdf} disabled={exporting || !mapInstance}>
         {exporting ? "Exportando..." : "Exportar PDF"}
       </Button>
     </div>
