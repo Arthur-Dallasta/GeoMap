@@ -1,4 +1,3 @@
-// frontend/src/types/leaflet-image.d.ts
 import type L from "leaflet";
 
 declare module "leaflet-image" {

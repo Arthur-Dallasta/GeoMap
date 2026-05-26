@@ -1,4 +1,3 @@
-# backend/app/properties/service.py
 import uuid
 
 from sqlalchemy.orm import Session

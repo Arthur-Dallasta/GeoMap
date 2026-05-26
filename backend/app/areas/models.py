@@ -1,4 +1,3 @@
-# backend/app/areas/models.py
 import uuid
 from datetime import datetime
 
@@ -26,6 +25,12 @@ class Area(Base):
     category_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("categories.id", ondelete="SET NULL"),
+        nullable=True,
+        default=None,
+    )
+    subcategory_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("subcategories.id", ondelete="SET NULL"),
         nullable=True,
         default=None,
     )

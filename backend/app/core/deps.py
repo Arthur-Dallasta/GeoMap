@@ -1,4 +1,3 @@
-# backend/app/core/deps.py
 import uuid
 
 from fastapi import Depends, HTTPException, status
@@ -21,7 +20,6 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido ou expirado",
         )
-    # Import here to avoid circular imports
     from app.auth.models import User
 
     user = db.get(User, uuid.UUID(user_id))

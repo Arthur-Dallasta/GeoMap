@@ -1,4 +1,3 @@
-// frontend/src/pages/PropertyDetail.tsx
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
@@ -14,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { api } from "../lib/api";
 import { useAreas } from "../hooks/useAreas";
 import { useCategories } from "../hooks/useCategories";
+import { useSubcategories } from "../hooks/useSubcategories";
 import type { AreaFeature, Property } from "../types";
 
 export default function PropertyDetail() {
@@ -27,8 +27,14 @@ export default function PropertyDetail() {
 
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const { areas, uploadArea, deleteArea, refetch: refetchAreas } = useAreas(id!);
-  const { categories, createCategory, updateCategory, deleteCategory, assignToArea } =
-    useCategories(id!);
+  const { categories, assignToArea: assignCategoryToArea } = useCategories(id!);
+  const {
+    subcategories,
+    createSubcategory,
+    updateSubcategory,
+    deleteSubcategory,
+    assignToArea: assignSubcategoryToArea,
+  } = useSubcategories(id!);
 
   const selectedArea: AreaFeature | null = selectedAreaId
     ? ([...(areas.boundary ? [areas.boundary] : []), ...areas.internal].find(
@@ -46,10 +52,18 @@ export default function PropertyDetail() {
 
   const handleAssignCategory = useCallback(
     async (areaId: string, categoryId: string | null) => {
-      await assignToArea(areaId, categoryId);
+      await assignCategoryToArea(areaId, categoryId);
       await refetchAreas();
     },
-    [assignToArea, refetchAreas]
+    [assignCategoryToArea, refetchAreas]
+  );
+
+  const handleAssignSubcategory = useCallback(
+    async (areaId: string, subcategoryId: string | null) => {
+      await assignSubcategoryToArea(areaId, subcategoryId);
+      await refetchAreas();
+    },
+    [assignSubcategoryToArea, refetchAreas]
   );
 
   const handleDeleteArea = useCallback(
@@ -98,14 +112,12 @@ export default function PropertyDetail() {
           </div>
         </div>
 
-        {/* Location info */}
         <div className="bg-card border rounded-lg p-4 mb-4 space-y-2 text-sm anim-in-1">
           <Row label="Localização" value={property.location} />
           <Row label="Município" value={`${property.municipality} — ${property.state}`} />
           <Row label="CEP" value={property.zip_code} />
         </div>
 
-        {/* Area stats grid */}
         <div className="grid grid-cols-2 gap-3 mb-6 anim-in-2">
           <StatCard label="Área total" value={`${Number(property.total_area_ha).toLocaleString("pt-BR")} ha`} accent />
           <StatCard label="Área própria" value={`${Number(property.own_area_ha).toLocaleString("pt-BR")} ha`} />
@@ -126,8 +138,10 @@ export default function PropertyDetail() {
           <AreaDetailPanel
             area={selectedArea}
             categories={categories}
+            subcategories={subcategories}
             onClose={() => setSelectedAreaId(null)}
             onAssignCategory={handleAssignCategory}
+            onAssignSubcategory={handleAssignSubcategory}
             onDelete={handleDeleteArea}
           />
         )}
@@ -136,12 +150,10 @@ export default function PropertyDetail() {
 
         <CategoryManager
           categories={categories}
-          onCreateCategory={createCategory}
-          onUpdateCategory={updateCategory}
-          onDeleteCategory={async (catId) => {
-            await deleteCategory(catId);
-            await refetchAreas();
-          }}
+          subcategories={subcategories}
+          onCreateSubcategory={createSubcategory}
+          onUpdateSubcategory={updateSubcategory}
+          onDeleteSubcategory={deleteSubcategory}
         />
 
         <AreaUploadModal
@@ -150,7 +162,6 @@ export default function PropertyDetail() {
           categories={categories}
           onClose={() => setModalOpen(false)}
           onUpload={uploadArea}
-          onCreateCategory={createCategory}
         />
       </div>
     </AppLayout>

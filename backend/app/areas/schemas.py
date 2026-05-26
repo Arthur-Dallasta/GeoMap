@@ -1,4 +1,3 @@
-# backend/app/areas/schemas.py
 import uuid
 from typing import Any
 
@@ -15,7 +14,6 @@ class AreaResponse(BaseModel):
 
 
 class AreaFeature(BaseModel):
-    """GeoJSON Feature wrapping an Area."""
     type: str = "Feature"
     geometry: dict[str, Any]
     properties: dict[str, Any]
@@ -27,4 +25,5 @@ class AreaListResponse(BaseModel):
 
 
 class AreaAssignRequest(BaseModel):
-    category_id: uuid.UUID | None
+    category_id: uuid.UUID | None = None
+    subcategory_id: uuid.UUID | None = None

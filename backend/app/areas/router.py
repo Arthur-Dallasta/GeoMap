@@ -1,7 +1,6 @@
-# backend/app/areas/router.py
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form
 from sqlalchemy.orm import Session
 
 from app.auth.models import User
@@ -45,7 +44,7 @@ async def upload_area(
 
 
 @router.patch("/{area_id}")
-def assign_category(
+def assign_area(
     property_id: uuid.UUID,
     area_id: uuid.UUID,
     data: AreaAssignRequest,
@@ -56,10 +55,16 @@ def assign_category(
     area = service.get_area(db, area_id, property_id)
     if not area:
         raise HTTPException(status_code=404, detail="Área não encontrada")
-    service.assign_category(db, area, data.category_id, property_id)
+
+    if "category_id" in data.model_fields_set:
+        service.assign_category(db, area, data.category_id)
+    if "subcategory_id" in data.model_fields_set:
+        service.assign_subcategory(db, area, data.subcategory_id, property_id)
+
     return {
         "id": str(area.id),
         "category_id": str(area.category_id) if area.category_id else None,
+        "subcategory_id": str(area.subcategory_id) if area.subcategory_id else None,
     }
 
 

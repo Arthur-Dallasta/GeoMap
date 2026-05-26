@@ -30,3 +30,9 @@ backend/alembic/__pycache__/
 
 # Superpowers CLI session state
 .superpowers/
+
+# Claude / AI tooling
+.claude/
+CLAUDE.md
+docs/superpowers/
+memory/

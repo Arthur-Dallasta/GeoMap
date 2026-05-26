@@ -53,7 +53,6 @@ export default function PropertyForm({
     setValue,
     watch,
     formState: { errors, isSubmitting },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = useForm<PropertyFormData>({
     resolver: zodResolver(schema) as any,
     defaultValues,

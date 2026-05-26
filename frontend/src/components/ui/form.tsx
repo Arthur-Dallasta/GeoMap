@@ -103,7 +103,6 @@ function FormLabel({
 function FormControl({ children, ...props }: React.ComponentProps<"div"> & { children?: React.ReactNode }) {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
-  // Clone the single child and inject form-related aria props
   const child = React.Children.only(children) as React.ReactElement<React.HTMLAttributes<HTMLElement>>
   return React.cloneElement(child, {
     id: formItemId,

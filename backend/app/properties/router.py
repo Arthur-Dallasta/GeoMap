@@ -1,4 +1,3 @@
-# backend/app/properties/router.py
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status

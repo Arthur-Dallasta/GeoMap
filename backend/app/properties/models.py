@@ -1,4 +1,3 @@
-# backend/app/properties/models.py
 import uuid
 from datetime import datetime
 from decimal import Decimal

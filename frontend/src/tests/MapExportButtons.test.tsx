@@ -1,9 +1,7 @@
-// frontend/src/tests/MapExportButtons.test.tsx
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type L from "leaflet";
 
-// Mock leaflet-image — canvas capture doesn't work in jsdom
 vi.mock("leaflet-image", () => ({
   default: vi.fn((_map: unknown, callback: (err: null, canvas: HTMLCanvasElement) => void) => {
     const canvas = document.createElement("canvas");
@@ -14,7 +12,6 @@ vi.mock("leaflet-image", () => ({
   }),
 }));
 
-// Mock jsPDF
 const mockSave = vi.fn();
 const mockAddImage = vi.fn();
 vi.mock("jspdf", () => ({

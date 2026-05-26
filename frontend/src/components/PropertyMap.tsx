@@ -1,4 +1,3 @@
-// frontend/src/components/PropertyMap.tsx
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -13,15 +12,41 @@ interface PropertyMapProps {
 }
 
 function calcLabelFontSize(zoom: number): number {
-  // Hide below zoom 11; scale from 8px to 16px above that
   if (zoom < 11) return 0;
   return Math.max(8, Math.min(16, zoom - 2));
 }
 
-function applyLabelFontSizes(zoom: number) {
+function updateLabelVisibility(
+  map: L.Map,
+  labelLayers: { layer: L.GeoJSON; label: string }[]
+) {
+  const zoom = map.getZoom();
   const fontSize = calcLabelFontSize(zoom);
-  document.querySelectorAll<HTMLElement>(".area-label").forEach((el) => {
+
+  labelLayers.forEach(({ layer, label }) => {
+    const tooltip = layer.getTooltip();
+    if (!tooltip) return;
+    const el = tooltip.getElement();
+    if (!el) return;
+
+    if (fontSize === 0) {
+      el.style.display = "none";
+      return;
+    }
+
     el.style.fontSize = `${fontSize}px`;
+
+    const bounds = layer.getBounds();
+    const sw = map.latLngToLayerPoint(bounds.getSouthWest());
+    const ne = map.latLngToLayerPoint(bounds.getNorthEast());
+    const pixelWidth = Math.abs(ne.x - sw.x);
+    const pixelHeight = Math.abs(ne.y - sw.y);
+
+    const estimatedTextWidth = label.length * fontSize * 0.6 + 16;
+    const minHeight = fontSize + 10;
+
+    el.style.display =
+      pixelWidth >= estimatedTextWidth && pixelHeight >= minHeight ? "" : "none";
   });
 }
 
@@ -36,6 +61,7 @@ export default function PropertyMap({
   const boundsRef = useRef<L.LatLngBounds | null>(null);
   const onAreaClickRef = useRef(onAreaClick);
   const onMapReadyRef = useRef(onMapReady);
+  const labelLayersRef = useRef<{ layer: L.GeoJSON; label: string }[]>([]);
 
   useEffect(() => {
     onAreaClickRef.current = onAreaClick;
@@ -45,7 +71,6 @@ export default function PropertyMap({
     onMapReadyRef.current = onMapReady;
   });
 
-  // Inicializar mapa
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { attributionControl: false }).setView([-15, -52], 4);
@@ -56,7 +81,7 @@ export default function PropertyMap({
     mapRef.current = map;
     onMapReadyRef.current?.(map);
 
-    map.on("zoomend", () => applyLabelFontSizes(map.getZoom()));
+    map.on("zoomend", () => updateLabelVisibility(map, labelLayersRef.current));
 
     return () => {
       map.remove();
@@ -64,7 +89,6 @@ export default function PropertyMap({
     };
   }, []);
 
-  // Atualizar camadas ao mudar áreas
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -73,6 +97,7 @@ export default function PropertyMap({
       if (layer instanceof L.GeoJSON) map.removeLayer(layer);
     });
 
+    labelLayersRef.current = [];
     const bounds: L.LatLngBounds[] = [];
 
     if (areas.boundary) {
@@ -91,7 +116,7 @@ export default function PropertyMap({
       const strokeColor = categoryColor ?? "#60a5fa";
 
       const layer = L.geoJSON(feature as GeoJSON.Feature, {
-        style: { color: strokeColor, fillColor, fillOpacity: 0.4, weight: 1.5 },
+        style: { color: strokeColor, fillColor, fillOpacity: 0.80, weight: 1.5 },
       }).addTo(map);
 
       layer.on("click", () => onAreaClickRef.current(feature));
@@ -103,6 +128,7 @@ export default function PropertyMap({
           direction: "center",
           className: "area-label",
         });
+        labelLayersRef.current.push({ layer, label: categoryName });
       }
     });
 
@@ -112,7 +138,7 @@ export default function PropertyMap({
       map.fitBounds(combined, { padding: [20, 20] });
     }
 
-    setTimeout(() => applyLabelFontSizes(map.getZoom()), 0);
+    setTimeout(() => updateLabelVisibility(map, labelLayersRef.current), 0);
   }, [areas]);
 
   const isEmpty = !areas.boundary && areas.internal.length === 0;

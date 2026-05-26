@@ -1,4 +1,3 @@
-# backend/app/auth/router.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -54,7 +53,6 @@ def forgot_password(body: ForgotPasswordRequest, db: Session = Depends(get_db)):
     if user:
         token = service.create_reset_token(db, user)
         print(f"[DEV] Reset link: http://localhost:5173/reset-password?token={token}")
-    # Retornar sempre 200 para não vazar se email existe
     return {"message": "Se o email existir, o link de redefinição foi enviado"}
 
 

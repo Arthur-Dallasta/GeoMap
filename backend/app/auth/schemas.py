@@ -1,4 +1,3 @@
-# backend/app/auth/schemas.py
 import re
 import uuid
 from datetime import datetime

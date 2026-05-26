@@ -2,9 +2,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { AreaListResponse } from "../types";
 
-// Mock completo do leaflet — não funciona em jsdom
-// IMPORTANT: mockLayer/mockMap must be defined INSIDE the factory
-// because vi.mock is hoisted before variable declarations in the module.
 vi.mock("leaflet", () => {
   const mockLayer = {
     addTo: vi.fn().mockReturnThis(),

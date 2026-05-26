@@ -1,4 +1,3 @@
-# backend/app/core/security.py
 import uuid
 from datetime import datetime, timedelta, timezone
 

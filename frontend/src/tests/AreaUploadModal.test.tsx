@@ -6,30 +6,29 @@ import type { Category } from "../types";
 const CATEGORIES: Category[] = [
   {
     id: "cat-1",
-    property_id: "prop-1",
-    name: "Soja",
+    key: "app",
+    name: "APP",
     color: "#22c55e",
-    description: null,
+    description: "Área de Preservação Permanente",
     created_at: "2026-01-01",
   },
   {
     id: "cat-2",
-    property_id: "prop-1",
-    name: "Pastagem",
+    key: "benfeitoria",
+    name: "Benfeitoria",
+    color: "#f97316",
+    description: null,
+    created_at: "2026-01-01",
+  },
+  {
+    id: "cat-3",
+    key: "area_cultivo",
+    name: "Área de cultivo",
     color: "#eab308",
     description: null,
     created_at: "2026-01-01",
   },
 ];
-
-const NEW_CAT: Category = {
-  id: "cat-new",
-  property_id: "prop-1",
-  name: "Soja Nova",
-  color: "#ef4444",
-  description: null,
-  created_at: "2026-01-01",
-};
 
 function makeFile(name = "area.geojson") {
   return new File(['{"type":"FeatureCollection","features":[]}'], name, {
@@ -45,7 +44,6 @@ function selectFile(file: File) {
 describe("AreaUploadModal — categoria", () => {
   const onClose = vi.fn();
   const onUpload = vi.fn().mockResolvedValue(undefined);
-  const onCreateCategory = vi.fn().mockResolvedValue(NEW_CAT);
 
   const defaultProps = {
     open: true,
@@ -53,13 +51,11 @@ describe("AreaUploadModal — categoria", () => {
     categories: CATEGORIES,
     onClose,
     onUpload,
-    onCreateCategory,
   };
 
   beforeEach(() => {
     onClose.mockClear();
     onUpload.mockClear();
-    onCreateCategory.mockClear();
   });
 
   it("não exibe seção de categoria para tipo 'Contorno geral'", () => {
@@ -73,12 +69,18 @@ describe("AreaUploadModal — categoria", () => {
     expect(screen.getByLabelText("Categoria *")).toBeInTheDocument();
   });
 
-  it("exibe categorias existentes e opção '+ Nova categoria...' no select", () => {
+  it("exibe as 3 categorias do sistema no select", () => {
     render(<AreaUploadModal {...defaultProps} />);
     fireEvent.click(screen.getByText("Área interna"));
-    expect(screen.getByRole("option", { name: "Soja" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Pastagem" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "+ Nova categoria..." })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "APP" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Benfeitoria" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Área de cultivo" })).toBeInTheDocument();
+  });
+
+  it("não exibe opção '+ Nova categoria...' no select", () => {
+    render(<AreaUploadModal {...defaultProps} />);
+    fireEvent.click(screen.getByText("Área interna"));
+    expect(screen.queryByRole("option", { name: "+ Nova categoria..." })).not.toBeInTheDocument();
   });
 
   it("botão de upload fica desabilitado com arquivo selecionado mas sem categoria", () => {
@@ -88,7 +90,7 @@ describe("AreaUploadModal — categoria", () => {
     expect(screen.getByText("Fazer upload")).toBeDisabled();
   });
 
-  it("botão de upload fica habilitado com arquivo + categoria existente selecionada", () => {
+  it("botão de upload fica habilitado com arquivo + categoria selecionada", () => {
     render(<AreaUploadModal {...defaultProps} />);
     fireEvent.click(screen.getByText("Área interna"));
     selectFile(makeFile());
@@ -96,22 +98,7 @@ describe("AreaUploadModal — categoria", () => {
     expect(screen.getByText("Fazer upload")).not.toBeDisabled();
   });
 
-  it("exibe campos inline ao selecionar '+ Nova categoria...'", () => {
-    render(<AreaUploadModal {...defaultProps} />);
-    fireEvent.click(screen.getByText("Área interna"));
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "new" } });
-    expect(screen.getByPlaceholderText("Ex: Plantio de soja")).toBeInTheDocument();
-  });
-
-  it("botão desabilitado quando '+ Nova categoria...' selecionado mas nome vazio", () => {
-    render(<AreaUploadModal {...defaultProps} />);
-    fireEvent.click(screen.getByText("Área interna"));
-    selectFile(makeFile());
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "new" } });
-    expect(screen.getByText("Fazer upload")).toBeDisabled();
-  });
-
-  it("chama onUpload com categoryId ao submeter com categoria existente", async () => {
+  it("chama onUpload com categoryId ao submeter com categoria selecionada", async () => {
     render(<AreaUploadModal {...defaultProps} />);
     fireEvent.click(screen.getByText("Área interna"));
     selectFile(makeFile());
@@ -119,26 +106,6 @@ describe("AreaUploadModal — categoria", () => {
     fireEvent.click(screen.getByText("Fazer upload"));
     await waitFor(() =>
       expect(onUpload).toHaveBeenCalledWith(expect.any(File), "internal", "cat-1")
-    );
-    expect(onCreateCategory).not.toHaveBeenCalled();
-  });
-
-  it("chama onCreateCategory e onUpload com id retornado ao criar nova categoria", async () => {
-    render(<AreaUploadModal {...defaultProps} />);
-    fireEvent.click(screen.getByText("Área interna"));
-    selectFile(makeFile());
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "new" } });
-    fireEvent.change(screen.getByPlaceholderText("Ex: Plantio de soja"), {
-      target: { value: "Soja Nova" },
-    });
-    fireEvent.click(screen.getByText("Fazer upload"));
-    await waitFor(() =>
-      expect(onCreateCategory).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "Soja Nova" })
-      )
-    );
-    await waitFor(() =>
-      expect(onUpload).toHaveBeenCalledWith(expect.any(File), "internal", "cat-new")
     );
   });
 
@@ -149,22 +116,5 @@ describe("AreaUploadModal — categoria", () => {
     await waitFor(() =>
       expect(onUpload).toHaveBeenCalledWith(expect.any(File), "boundary", undefined)
     );
-    expect(onCreateCategory).not.toHaveBeenCalled();
-  });
-
-  it("exibe erro e não chama onUpload quando onCreateCategory falha", async () => {
-    const failingCreate = vi.fn().mockRejectedValue(new Error("Servidor indisponível"));
-    render(<AreaUploadModal {...defaultProps} onCreateCategory={failingCreate} />);
-    fireEvent.click(screen.getByText("Área interna"));
-    selectFile(makeFile());
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "new" } });
-    fireEvent.change(screen.getByPlaceholderText("Ex: Plantio de soja"), {
-      target: { value: "Soja Nova" },
-    });
-    fireEvent.click(screen.getByText("Fazer upload"));
-    await waitFor(() =>
-      expect(screen.getByText("Servidor indisponível")).toBeInTheDocument()
-    );
-    expect(onUpload).not.toHaveBeenCalled();
   });
 });

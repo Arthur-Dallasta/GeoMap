@@ -1,4 +1,3 @@
-// frontend/src/lib/api.ts
 const BASE_URL = "/api";
 
 class ApiError extends Error {

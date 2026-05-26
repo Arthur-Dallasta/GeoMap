@@ -1,4 +1,3 @@
-// frontend/src/components/MapExportButtons.tsx
 import { useState } from "react";
 import L from "leaflet";
 import leafletImage from "leaflet-image";
@@ -14,17 +13,12 @@ async function buildExportCanvas(map: L.Map): Promise<HTMLCanvasElement> {
   const container = map.getContainer();
   const containerRect = container.getBoundingClientRect();
 
-  // ── Capture everything BEFORE leaflet-image manipulates the DOM ──
-
-  // SVG overlay (GeoJSON polygons)
   const svgEl = container.querySelector<SVGSVGElement>(".leaflet-overlay-pane svg");
   const svgRect = svgEl?.getBoundingClientRect();
   const svgData = svgEl ? new XMLSerializer().serializeToString(svgEl) : null;
-  // Visual offset of the SVG relative to the map container (accounts for all CSS transforms)
   const svgOffsetX = svgRect ? svgRect.left - containerRect.left : 0;
   const svgOffsetY = svgRect ? svgRect.top - containerRect.top : 0;
 
-  // Category name labels
   const labelData = Array.from(container.querySelectorAll<HTMLElement>(".area-label"))
     .map((el) => {
       const r = el.getBoundingClientRect();
@@ -38,13 +32,11 @@ async function buildExportCanvas(map: L.Map): Promise<HTMLCanvasElement> {
     })
     .filter((l) => l.text && l.fontSize > 0);
 
-  // ── Tile canvas via leaflet-image ──
   const canvas = await new Promise<HTMLCanvasElement>((res, rej) =>
     leafletImage(map, (err, c) => (err ? rej(new Error(err)) : res(c)))
   );
   const ctx = canvas.getContext("2d")!;
 
-  // ── Composite SVG polygons onto the tile canvas ──
   if (svgData) {
     const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -55,7 +47,7 @@ async function buildExportCanvas(map: L.Map): Promise<HTMLCanvasElement> {
           ctx.drawImage(img, svgOffsetX, svgOffsetY);
           res();
         };
-        img.onerror = () => res(); // fail silently — tiles still export
+        img.onerror = () => res();
         img.src = url;
       });
     } finally {
@@ -63,14 +55,12 @@ async function buildExportCanvas(map: L.Map): Promise<HTMLCanvasElement> {
     }
   }
 
-  // ── Draw category name labels ──
   labelData.forEach(({ text, fontSize, x, y }) => {
     ctx.save();
     ctx.font = `600 ${fontSize}px sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.lineJoin = "round";
-    // Dark outline for readability over any polygon color
     ctx.strokeStyle = "rgba(0,0,0,0.85)";
     ctx.lineWidth = 3;
     ctx.strokeText(text, x, y);

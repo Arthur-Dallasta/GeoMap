@@ -1,4 +1,3 @@
-# backend/app/auth/service.py
 import secrets
 import uuid
 from datetime import datetime, timedelta, timezone

@@ -50,7 +50,6 @@ describe("useAreas.uploadArea", () => {
     await act(async () => {
       await result.current.uploadArea(file, "boundary");
     });
-    // api.get is called once on mount, once after upload = 2 calls total
     expect(api.get).toHaveBeenCalledTimes(2);
   });
 });
