@@ -34,5 +34,5 @@ backend/alembic/__pycache__/
 # Claude / AI tooling
 .claude/
 CLAUDE.md
-docs/superpowers/
+docs/
 memory/
