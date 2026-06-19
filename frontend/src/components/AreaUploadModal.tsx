@@ -1,21 +1,23 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Category } from "../types";
+import type { Category, Subcategory } from "../types";
 import { CategoryAssignmentError } from "../hooks/useAreas";
 
 interface AreaUploadModalProps {
   open: boolean;
   hasBoundary: boolean;
   categories: Category[];
+  subcategories: Subcategory[];
   onClose: () => void;
-  onUpload: (file: File, type: "boundary" | "internal", categoryId?: string) => Promise<void>;
+  onUpload: (file: File, type: "boundary" | "internal", categoryId?: string, subcategoryId?: string) => Promise<void>;
 }
 
 export default function AreaUploadModal({
   open,
   hasBoundary,
   categories,
+  subcategories,
   onClose,
   onUpload,
 }: AreaUploadModalProps) {
@@ -25,6 +27,7 @@ export default function AreaUploadModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>("");
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -65,7 +68,8 @@ export default function AreaUploadModal({
     setError(null);
     try {
       const categoryId = areaType === "internal" ? selectedCategoryId : undefined;
-      await onUpload(file, areaType, categoryId);
+      const subcategoryId = areaType === "internal" && selectedSubcategoryId ? selectedSubcategoryId : undefined;
+      await onUpload(file, areaType, categoryId, subcategoryId);
       handleClose();
     } catch (e) {
       if (e instanceof CategoryAssignmentError) {
@@ -83,7 +87,13 @@ export default function AreaUploadModal({
     setError(null);
     setAreaType("boundary");
     setSelectedCategoryId("");
+    setSelectedSubcategoryId("");
     onClose();
+  }
+
+  function handleCategoryChange(catId: string) {
+    setSelectedCategoryId(catId);
+    setSelectedSubcategoryId("");
   }
 
   return (
@@ -157,25 +167,52 @@ export default function AreaUploadModal({
           )}
         </div>
 
-        {/* Categoria — apenas para área interna */}
+        {/* Categoria e Subcategoria — apenas para área interna */}
         {areaType === "internal" && (
-          <div className="mt-4">
-            <label htmlFor="category-select" className="text-sm font-medium block mb-1">
-              Categoria *
-            </label>
-            <select
-              id="category-select"
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Selecione uma categoria...</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+          <div className="mt-4 space-y-3">
+            <div>
+              <label htmlFor="category-select" className="text-sm font-medium block mb-1">
+                Categoria *
+              </label>
+              <select
+                id="category-select"
+                value={selectedCategoryId}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Selecione uma categoria...</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedCategoryId && (() => {
+              const relevant = subcategories.filter((s) => s.category_id === selectedCategoryId);
+              if (relevant.length === 0) return null;
+              return (
+                <div>
+                  <label htmlFor="subcategory-select" className="text-sm font-medium block mb-1">
+                    Subcategoria <span className="text-muted-foreground font-normal">(opcional)</span>
+                  </label>
+                  <select
+                    id="subcategory-select"
+                    value={selectedSubcategoryId}
+                    onChange={(e) => setSelectedSubcategoryId(e.target.value)}
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Nenhuma subcategoria</option>
+                    {relevant.map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })()}
           </div>
         )}
 

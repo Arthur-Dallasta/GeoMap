@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "../components/AppLayout";
 import PropertyForm, { type PropertyFormData } from "../components/PropertyForm";
+import { Button } from "@/components/ui/button";
 import { api } from "../lib/api";
 import type { Property } from "../types";
 
@@ -22,7 +23,12 @@ export default function PropertyNew() {
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-semibold mb-6">Nova Propriedade</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-semibold">Nova Propriedade</h1>
+          <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
+            Cancelar
+          </Button>
+        </div>
         {error && <p className="text-destructive mb-4">{error}</p>}
         <PropertyForm onSubmit={onSubmit} submitLabel="Cadastrar propriedade" />
       </div>

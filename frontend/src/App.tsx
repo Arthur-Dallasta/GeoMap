@@ -6,6 +6,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Login from "./pages/Login";
 import PropertyDetail from "./pages/PropertyDetail";
 import PropertyEdit from "./pages/PropertyEdit";
+import AreasPage from "./pages/AreasPage";
 import PropertyNew from "./pages/PropertyNew";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/properties/new" element={<PrivateRoute><PropertyNew /></PrivateRoute>} />
         <Route path="/properties/:id" element={<PrivateRoute><PropertyDetail /></PrivateRoute>} />
         <Route path="/properties/:id/edit" element={<PrivateRoute><PropertyEdit /></PrivateRoute>} />
+        <Route path="/properties/:id/areas" element={<PrivateRoute><AreasPage /></PrivateRoute>} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>

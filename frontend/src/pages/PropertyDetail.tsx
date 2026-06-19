@@ -146,7 +146,12 @@ export default function PropertyDetail() {
           />
         )}
 
-        <MapExportButtons mapInstance={mapInstance} propertyName={property.name} />
+        <MapExportButtons
+          mapInstance={mapInstance}
+          propertyName={property.name}
+          onImport={() => setModalOpen(true)}
+          onAreasPage={() => navigate(`/properties/${id}/areas`)}
+        />
 
         <CategoryManager
           categories={categories}
@@ -160,6 +165,7 @@ export default function PropertyDetail() {
           open={modalOpen}
           hasBoundary={areas.boundary !== null}
           categories={categories}
+          subcategories={subcategories}
           onClose={() => setModalOpen(false)}
           onUpload={uploadArea}
         />

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AppLayout from "../components/AppLayout";
 import PropertyForm, { type PropertyFormData } from "../components/PropertyForm";
+import { Button } from "@/components/ui/button";
 import { api } from "../lib/api";
 import type { Property } from "../types";
 
@@ -50,7 +51,12 @@ export default function PropertyEdit() {
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-semibold mb-6">Editar: {property.name}</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-semibold">Editar: {property.name}</h1>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/properties/${id}`)}>
+            Cancelar
+          </Button>
+        </div>
         {error && <p className="text-destructive mb-4">{error}</p>}
         <PropertyForm defaultValues={defaultValues} onSubmit={onSubmit} submitLabel="Salvar alterações" />
       </div>

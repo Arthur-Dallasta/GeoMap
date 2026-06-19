@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 interface MapExportButtonsProps {
   mapInstance: L.Map | null;
   propertyName: string;
+  onImport?: () => void;
+  onAreasPage?: () => void;
 }
 
 async function buildExportCanvas(map: L.Map): Promise<HTMLCanvasElement> {
@@ -72,7 +74,7 @@ async function buildExportCanvas(map: L.Map): Promise<HTMLCanvasElement> {
   return canvas;
 }
 
-export default function MapExportButtons({ mapInstance, propertyName }: MapExportButtonsProps) {
+export default function MapExportButtons({ mapInstance, propertyName, onImport, onAreasPage }: MapExportButtonsProps) {
   const [exporting, setExporting] = useState(false);
 
   async function exportPng() {
@@ -108,6 +110,16 @@ export default function MapExportButtons({ mapInstance, propertyName }: MapExpor
 
   return (
     <div className="flex gap-2 mt-3">
+      {onImport && (
+        <Button variant="outline" size="sm" onClick={onImport}>
+          Importar Área
+        </Button>
+      )}
+      {onAreasPage && (
+        <Button variant="outline" size="sm" onClick={onAreasPage}>
+          Minhas Áreas
+        </Button>
+      )}
       <Button variant="outline" size="sm" onClick={exportPng} disabled={exporting || !mapInstance}>
         {exporting ? "Exportando..." : "Exportar PNG"}
       </Button>

@@ -5,7 +5,7 @@ import zipfile
 
 import shapefile as pyshp
 from fastapi import HTTPException, UploadFile
-from geoalchemy2.shape import from_shape
+from geoalchemy2.shape import from_shape, to_shape
 from shapely import force_2d
 from shapely.geometry import shape as shapely_shape
 from sqlalchemy import func
@@ -139,6 +139,24 @@ async def upload_area(
         if isinstance(exc, HTTPException):
             raise
         raise HTTPException(status_code=400, detail="Invalid geometry")
+
+    if area_type == "internal":
+        boundary_row = (
+            db.query(Area)
+            .filter(Area.property_id == property_id, Area.type == "boundary")
+            .first()
+        )
+        if not boundary_row:
+            raise HTTPException(
+                status_code=422,
+                detail="Cadastre o contorno da propriedade antes de importar áreas internas.",
+            )
+        boundary_shape = force_2d(to_shape(boundary_row.geometry))
+        if not boundary_shape.covers(geom):
+            raise HTTPException(
+                status_code=422,
+                detail="A área interna deve estar completamente dentro do contorno da propriedade.",
+            )
 
     if area_type == "boundary":
         db.query(Area).filter(
