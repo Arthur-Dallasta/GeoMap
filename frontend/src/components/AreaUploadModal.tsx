@@ -10,7 +10,7 @@ interface AreaUploadModalProps {
   categories: Category[];
   subcategories: Subcategory[];
   onClose: () => void;
-  onUpload: (file: File, type: "boundary" | "internal", categoryId?: string, subcategoryId?: string) => Promise<void>;
+  onUpload: (file: File, type: "boundary" | "internal", categoryId?: string, subcategoryId?: string) => Promise<unknown>;
 }
 
 export default function AreaUploadModal({

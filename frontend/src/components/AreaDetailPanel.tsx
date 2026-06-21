@@ -18,7 +18,7 @@ function getGeomInfo(geometry: GeoJSON.Geometry): { type: string; vertices: numb
   if (geometry.type === "Polygon") {
     return { type: "Polígono", vertices: geometry.coordinates[0].length - 1 };
   }
-  if (geometry.type === "MultiPolígono" || geometry.type === "MultiPolygon") {
+  if (geometry.type === "MultiPolygon") {
     const vertices = (geometry as GeoJSON.MultiPolygon).coordinates.reduce(
       (sum, poly) => sum + poly[0].length - 1,
       0

@@ -23,9 +23,6 @@ export default function AreasPage() {
   const { categories, assignToArea: assignCategoryToArea } = useCategories(id!);
   const {
     subcategories,
-    createSubcategory,
-    updateSubcategory,
-    deleteSubcategory,
     assignToArea: assignSubcategoryToArea,
   } = useSubcategories(id!);
 

@@ -49,6 +49,7 @@ describe("AreaUploadModal — categoria", () => {
     open: true,
     hasBoundary: false,
     categories: CATEGORIES,
+    subcategories: [],
     onClose,
     onUpload,
   };

@@ -1,13 +1,15 @@
-# GeoMap — Sistema de Gestao de Propriedades Rurais
+# GeoMap — Sistema de Gestão de Propriedades Rurais
 
-Sistema web para cadastro e gestao de propriedades rurais. Produtores registram suas propriedades, importam dados georreferenciados (GeoJSON) e visualizam um mapa interativo com areas coloridas por categoria.
+Sistema web para cadastro e gestão de propriedades rurais. Produtores registram suas propriedades, importam dados georreferenciados (GeoJSON) e visualizam um mapa interativo com áreas coloridas por categoria e subcategoria.
 
 ## Estrutura do Projeto
 
 ```
 GeoMap/
-├── docker-compose.yml   # Banco de dados (PostgreSQL + PostGIS)
-├── backend/             # API FastAPI (Python)
+├── docker-compose.yml   # Orquestração completa (DB + backend + frontend)
+├── backend/
+│   ├── Dockerfile
+│   ├── .dockerignore
 │   ├── main.py
 │   ├── requirements.txt
 │   ├── .env.example
@@ -16,42 +18,70 @@ GeoMap/
 │       ├── auth/
 │       ├── properties/
 │       ├── areas/
-│       └── categories/
-└── frontend/            # SPA React + Vite (TypeScript)
+│       ├── categories/
+│       └── subcategories/
+└── frontend/
+    ├── Dockerfile
+    ├── .dockerignore
+    ├── nginx.conf       # Serve SPA + proxy /api → backend
     ├── package.json
     └── src/
 ```
 
-## Pre-requisitos
+---
 
-- [Docker](https://www.docker.com/) (para o banco de dados)
+## Opção 1 — Docker (recomendado)
+
+Roda toda a stack (banco, backend, frontend) com um único comando.
+
+**Pré-requisito:** [Docker Desktop](https://www.docker.com/)
+
+```bash
+docker compose up --build
+```
+
+Aguarde os três containers subirem. Na primeira execução o build leva alguns minutos (download de imagens + instalação de dependências).
+
+| Serviço  | URL                        | Descrição                      |
+|----------|----------------------------|--------------------------------|
+| Frontend | http://localhost           | Interface web (nginx)          |
+| Backend  | http://localhost:8000      | API REST (FastAPI)             |
+| API Docs | http://localhost:8000/docs | Swagger UI                     |
+| Banco    | localhost:5433             | PostgreSQL + PostGIS           |
+
+> As migrations são aplicadas automaticamente no startup do backend (`alembic upgrade head`).
+
+**Parar os serviços:**
+
+```bash
+docker compose down
+```
+
+**Parar e apagar os dados do banco (reset completo):**
+
+```bash
+docker compose down -v
+```
+
+---
+
+## Opção 2 — Desenvolvimento local
+
+Para desenvolvimento com hot-reload no frontend e backend.
+
+**Pré-requisitos:**
+
+- [Docker](https://www.docker.com/) (apenas para o banco)
 - [Python 3.12+](https://www.python.org/)
 - [Node.js 20+](https://nodejs.org/)
 
----
-
-## Rodando do Zero
-
 ### 1. Banco de Dados
 
-Suba o PostgreSQL com PostGIS via Docker Compose:
-
 ```bash
-docker compose up -d
+docker compose up db -d
 ```
 
-Isso cria um container com:
-- PostgreSQL 16 + PostGIS 3.4
-- Usuario: `geomap` / Senha: `geomap` / Banco: `geomap`
-- Porta local: **5433**
-
-Verifique que esta rodando:
-
-```bash
-docker compose ps
-```
-
----
+Cria o PostgreSQL + PostGIS na porta **5433**.
 
 ### 2. Backend (FastAPI)
 
@@ -59,7 +89,7 @@ docker compose ps
 cd backend
 ```
 
-**Crie e ative o ambiente virtual:**
+**Ambiente virtual:**
 
 ```bash
 python -m venv .venv
@@ -71,120 +101,96 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-**Instale as dependencias:**
+**Dependências:**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-**Configure as variaveis de ambiente:**
+**Variáveis de ambiente:**
 
 ```bash
 cp .env.example .env
 ```
-
-O arquivo `.env` padrao ja funciona com o Docker Compose (porta 5433). Ajuste `SECRET_KEY` se necessario:
 
 ```env
 DATABASE_URL=postgresql+psycopg://geomap:geomap@localhost:5433/geomap
 SECRET_KEY=troque-me-em-producao
 ```
 
-**Execute as migrations do banco:**
+**Migrations e servidor:**
 
 ```bash
 alembic upgrade head
-```
-
-**Inicie o servidor:**
-
-```bash
 uvicorn main:app --reload
 ```
 
-A API estara disponivel em `http://localhost:8000`.
-Documentacao interativa: `http://localhost:8000/docs`
-
----
+API disponível em `http://localhost:8000`.
 
 ### 3. Frontend (React + Vite)
 
 ```bash
 cd frontend
-```
-
-**Instale as dependencias:**
-
-```bash
 npm install
-```
-
-**Inicie o servidor de desenvolvimento:**
-
-```bash
 npm run dev
 ```
 
-O frontend estara disponivel em `http://localhost:5173`.
+Frontend disponível em `http://localhost:5173`. O Vite proxy encaminha `/api/*` para `http://localhost:8000`.
 
 ---
 
-## Resumo dos Servicos
-
-| Servico    | URL                          | Descricao                     |
-|------------|------------------------------|-------------------------------|
-| Frontend   | http://localhost:5173        | Interface web (React + Vite)  |
-| Backend    | http://localhost:8000        | API REST (FastAPI)            |
-| API Docs   | http://localhost:8000/docs   | Swagger UI interativo         |
-| Banco      | localhost:5433               | PostgreSQL + PostGIS          |
-
----
-
-## Comandos Uteis
+## Comandos Úteis
 
 ### Backend
 
 ```bash
-# Rodar testes
-cd backend
+# Testes
 pytest
 
-# Criar nova migration apos alterar modelos
+# Nova migration após alterar modelos
 alembic revision --autogenerate -m "descricao"
 
-# Aplicar migrations pendentes
+# Aplicar migrations
 alembic upgrade head
 
-# Reverter ultima migration
+# Reverter última migration
 alembic downgrade -1
 ```
 
 ### Frontend
 
 ```bash
-# Build de producao
+# Build de produção
 npm run build
 
 # Lint
 npm run lint
+
+# Testes
+npm run test
 ```
 
 ### Docker
 
 ```bash
-# Parar o banco
-docker compose down
+# Rebuild de um serviço específico
+docker compose up --build backend
 
-# Parar e remover os dados (reset completo)
-docker compose down -v
+# Ver logs em tempo real
+docker compose logs -f backend
+
+# Verificar status dos containers
+docker compose ps
 ```
 
 ---
 
 ## Stack de Tecnologias
 
-**Frontend:** React 19, Vite, TypeScript, Tailwind CSS 4, React Router v7, React Hook Form, Zod, Leaflet, shadcn/ui
+**Frontend:** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router v7, React Hook Form, Zod 4, Leaflet, shadcn/ui, jsPDF
 
-**Backend:** FastAPI, SQLAlchemy 2.0, Alembic, GeoAlchemy2, Pydantic 2, psycopg3, python-jose, passlib
+**Backend:** FastAPI, SQLAlchemy 2.0, Alembic, GeoAlchemy2, Shapely, Pydantic 2, psycopg3, python-jose, passlib
 
 **Banco:** PostgreSQL 16 + PostGIS 3.4
+
+**Infraestrutura:** Docker, Docker Compose, nginx (serve SPA + proxy reverso para API)

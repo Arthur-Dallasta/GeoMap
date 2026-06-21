@@ -43,7 +43,7 @@ const AREAS_WITH_BOUNDARY: AreaListResponse = {
       type: "Polygon",
       coordinates: [[[-47.9, -21.2], [-47.8, -21.2], [-47.8, -21.1], [-47.9, -21.1], [-47.9, -21.2]]],
     },
-    properties: { id: "b1", type: "boundary", category_id: null, category_color: null },
+    properties: { id: "b1", type: "boundary", category_id: null, category_color: null, category_name: null, subcategory_id: null, subcategory_name: null },
   },
   internal: [],
 };
@@ -57,7 +57,7 @@ const AREAS_WITH_INTERNAL: AreaListResponse = {
         type: "Polygon",
         coordinates: [[[-47.9, -21.2], [-47.8, -21.2], [-47.8, -21.1], [-47.9, -21.1], [-47.9, -21.2]]],
       },
-      properties: { id: "i1", type: "internal", category_id: null, category_color: null },
+      properties: { id: "i1", type: "internal", category_id: null, category_color: null, category_name: null, subcategory_id: null, subcategory_name: null },
     },
   ],
 };
@@ -71,7 +71,7 @@ const AREAS_WITH_CATEGORY: AreaListResponse = {
         type: "Polygon",
         coordinates: [[[-47.9, -21.2], [-47.8, -21.2], [-47.8, -21.1], [-47.9, -21.1], [-47.9, -21.2]]],
       },
-      properties: { id: "i2", type: "internal", category_id: "cat-1", category_color: "#ef4444" },
+      properties: { id: "i2", type: "internal", category_id: "cat-1", category_color: "#ef4444", category_name: null, subcategory_id: null, subcategory_name: null },
     },
   ],
 };

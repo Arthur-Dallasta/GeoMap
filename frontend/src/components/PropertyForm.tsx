@@ -159,7 +159,7 @@ const schema = z
           code: z.ZodIssueCode.too_big,
           maximum: total,
           inclusive: true,
-          type: "number",
+          origin: "number",
           path: [key],
           message: `${label} não pode ser maior que a área total (${total} ha)`,
         });

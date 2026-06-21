@@ -15,5 +15,23 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://geomap:geomap@db:5432/geomap
+      SECRET_KEY: troque-me-em-producao
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
